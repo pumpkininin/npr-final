@@ -6,19 +6,36 @@ import java.util.List;
 public class Message implements Serializable {
     private String sender;
     private String receiver;
-    private Type type;
+    private MessageType messageType;
     private List<String> activeList;
     private String content;
-
+    private ReceiverType receiverType;
+    private byte[] fileData;
     public Message() {
     }
 
-    public Message(String sender, String receiver, Type type, List activeList, String content) {
-        this.sender = sender;
-        this.receiver = receiver;
-        this.type = type;
-        this.activeList = activeList;
-        this.content =  content;
+    public byte[] getFileData() {
+        return fileData;
+    }
+
+    public void setFileData(byte[] fileData) {
+        this.fileData = fileData;
+    }
+
+    public ReceiverType getReceiverType() {
+        return receiverType;
+    }
+
+    public void setReceiverType(ReceiverType receiverType) {
+        this.receiverType = receiverType;
+    }
+
+    public MessageType getMessageType() {
+        return messageType;
+    }
+
+    public void setMessageType(MessageType messageType) {
+        this.messageType = messageType;
     }
 
     public String getContent() {
@@ -53,15 +70,12 @@ public class Message implements Serializable {
         this.receiver = receiver;
     }
 
-    public Type getType() {
-        return type;
+
+    public enum MessageType{
+        LOGIN, LOGOUT, MSG, UPDATE_LIST, DUPLICATED_USER, FILE
+    }
+    public enum ReceiverType{
+        PERSON, GROUP
     }
 
-    public void setType(Type type) {
-        this.type = type;
-    }
-
-    public enum Type{
-        LOGIN, LOGOUT, MSG, FILE, UPDATE_LIST, DUPLICATED_USER
-    }
 }

@@ -50,7 +50,7 @@ public class ServerCore implements Runnable{
                 while(true){
                     Message msg = (Message) ois.readObject();
                     if(msg != null){
-                        switch (msg.getType()){
+                        switch (msg.getMessageType()){
                             case LOGIN:
                                 if(!isExistUsername(msg.getSender())){
                                     clientName = msg.getSender();
@@ -60,6 +60,16 @@ public class ServerCore implements Runnable{
                                 }else{
                                     notifyDuplicate(oos);
                                 }
+                                break;
+                            case MSG:
+                                if(msg.getReceiverType() == Message.ReceiverType.PERSON){
+                                    transferMessage(msg);
+                                }else{
+                                    transferToAll(msg);
+                                }
+                                break;
+                            case LOGOUT:
+                                notifyToAllUsers(clientName);
                         }
                     }
                 }
@@ -68,9 +78,23 @@ public class ServerCore implements Runnable{
             }
         }
 
+        private void transferToAll(Message msg) throws IOException {
+            for(ObjectOutputStream os : clientOs.values()){
+                os.writeObject(msg);
+                os.flush();
+            }
+        }
+
+        private void transferMessage(Message msg) throws IOException {
+            ObjectOutputStream receiverOs = clientOs.get(msg.getReceiver());
+            receiverOs.writeObject(msg);
+            receiverOs.flush();
+            receiverOs.close();
+        }
+
         private void notifyDuplicate(ObjectOutputStream oos) throws IOException {
             Message duplicatedMSG = new Message();
-            duplicatedMSG.setType(Message.Type.DUPLICATED_USER);
+            duplicatedMSG.setMessageType(Message.MessageType.DUPLICATED_USER);
             oos.writeObject(duplicatedMSG);
             oos.flush();
             oos.reset();
@@ -80,7 +104,7 @@ public class ServerCore implements Runnable{
             Message updateMsg = new Message();
             updateMsg.setSender("SERVER");
             updateMsg.setActiveList(new ArrayList<>(clients));
-            updateMsg.setType(Message.Type.UPDATE_LIST);
+            updateMsg.setMessageType(Message.MessageType.UPDATE_LIST);
             updateMsg.setContent(clientName);
             for(Map.Entry<String, ObjectOutputStream> set : clientOs.entrySet()){
                 updateMsg.setReceiver(set.getKey());
