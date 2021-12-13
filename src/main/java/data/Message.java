@@ -72,7 +72,7 @@ public class Message implements Serializable {
 
 
     public enum MessageType{
-        LOGIN, LOGOUT, MSG, UPDATE_LIST, DUPLICATED_USER, FILE
+        LOGIN, REGISTER, LOGOUT, MSG, UPDATE_LIST, DUPLICATED_USER, FILE, WRONG_USERNAME_PASSWORD
     }
     public enum ReceiverType{
         PERSON, GROUP

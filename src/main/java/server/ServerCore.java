@@ -9,67 +9,53 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
 
-public class ServerCore implements Runnable{
+public class ServerCore{
     private HashMap<String, ObjectOutputStream> clientOs;
-    private HashSet<String> clients;
+    private HashMap<String, String> accountSet;
+    private HashSet<String> activeSet;
     private ServerSocket serverSocket;
-    private int port;
 
     public ServerCore(int port) throws IOException {
         serverSocket = new ServerSocket(port);
-        clients = new HashSet<>();
+        accountSet = new HashMap<>();
+        activeSet = new HashSet<>();
         clientOs = new HashMap();
     }
 
-    @Override
-    public void run() {
-        while (true){
-            Socket clientSocket = null;
-            try{
-                clientSocket = serverSocket.accept();
-            }catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
+
     class ServerService extends Thread{
         private String clientName;
         private Socket clientSocket;
         private ObjectInputStream ois;
         private ObjectOutputStream oos;
 
-        ServerService(Socket clientSocket){
-            this.clientSocket = clientSocket;
-        }
 
         @Override
         public void run() {
             try{
+                this.clientSocket =  serverSocket.accept();
                 ois = new ObjectInputStream(clientSocket.getInputStream());
                 oos = new ObjectOutputStream(clientSocket.getOutputStream());
                 while(true){
                     Message msg = (Message) ois.readObject();
                     if(msg != null){
-                        switch (msg.getMessageType()){
-                            case LOGIN:
-                                if(!isExistUsername(msg.getSender())){
-                                    clientName = msg.getSender();
-                                    clientOs.put(clientName, oos);
-                                    clients.add(clientName);
-                                    notifyToAllUsers(clientName);
-                                }else{
-                                    notifyDuplicate(oos);
-                                }
+                        switch (msg.getReceiverType()){
+                            case PERSON:
+                                transferMessage(msg);
                                 break;
-                            case MSG:
-                                if(msg.getReceiverType() == Message.ReceiverType.PERSON){
-                                    transferMessage(msg);
-                                }else{
+                            case GROUP:
+                                if(msg.getMessageType() == Message.MessageType.REGISTER){
+                                    register(msg);
+                                }else if(msg.getMessageType() == Message.MessageType.LOGIN){
+                                    login(msg);
+                                }else if(msg.getMessageType() == Message.MessageType.LOGOUT){
+                                    logout(msg);
+                                }else if(msg.getMessageType() == Message.MessageType.MSG){
                                     transferToAll(msg);
                                 }
                                 break;
-                            case LOGOUT:
-                                notifyToAllUsers(clientName);
+                            default:
+                                break;
                         }
                     }
                 }
@@ -103,7 +89,7 @@ public class ServerCore implements Runnable{
         private void notifyToAllUsers(String clientName) throws IOException {
             Message updateMsg = new Message();
             updateMsg.setSender("SERVER");
-            updateMsg.setActiveList(new ArrayList<>(clients));
+            updateMsg.setActiveList(new ArrayList<>(activeSet));
             updateMsg.setMessageType(Message.MessageType.UPDATE_LIST);
             updateMsg.setContent(clientName);
             for(Map.Entry<String, ObjectOutputStream> set : clientOs.entrySet()){
@@ -113,12 +99,35 @@ public class ServerCore implements Runnable{
                 set.getValue().reset();
             }
         }
-
-        private boolean isExistUsername(String sender) {
-            for(String username : clients){
-                if(sender.equalsIgnoreCase(username)) return true;
+        private void register(Message message) throws IOException {
+            Message response = new Message();
+            for(String s : accountSet.keySet()){
+                if(s.equals(message.getSender())){
+                    response.setMessageType(Message.MessageType.DUPLICATED_USER);
+                    oos.writeObject(response);
+                    oos.flush();
+                }
             }
-            return false;
+            clientOs.put(message.getSender(), oos);
+            accountSet.put(message.getSender(), message.getContent());
+            activeSet.add(message.getSender());
+            notifyToAllUsers(message.getSender());
+        }
+        private void login(Message msg) throws IOException {
+            Message response = new Message();
+            if(accountSet.get(msg.getSender()) == msg.getContent()){
+                clientOs.put(msg.getSender(), oos);
+                activeSet.add(msg.getSender());
+                notifyToAllUsers(msg.getSender());
+            }else{
+                response.setMessageType(Message.MessageType.WRONG_USERNAME_PASSWORD);
+                oos.writeObject(response);
+                oos.flush();
+            }
+        }
+        private void logout(Message msg) throws IOException {
+            Message response = new Message();
+            notifyToAllUsers(msg.getSender());
         }
     }
 
