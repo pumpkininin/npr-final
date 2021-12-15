@@ -8,20 +8,21 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ServerCore{
     private HashMap<String, ObjectOutputStream> clientOs;
     private HashMap<String, String> accountSet;
     private HashSet<String> activeSet;
     private ServerSocket serverSocket;
-
     public ServerCore(int port) throws IOException {
         serverSocket = new ServerSocket(port);
         accountSet = new HashMap<>();
         activeSet = new HashSet<>();
         clientOs = new HashMap();
+        (new ServerService()).start();
     }
-
 
     class ServerService extends Thread{
         private String clientName;
@@ -29,11 +30,11 @@ public class ServerCore{
         private ObjectInputStream ois;
         private ObjectOutputStream oos;
 
-
         @Override
         public void run() {
             try{
                 this.clientSocket =  serverSocket.accept();
+                System.out.println("new client");
                 ois = new ObjectInputStream(clientSocket.getInputStream());
                 oos = new ObjectOutputStream(clientSocket.getOutputStream());
                 while(true){

@@ -17,6 +17,7 @@ public class LoginGUI extends javax.swing.JFrame {
     public LoginGUI() throws IOException {
         initComponents();
         this.clientCore = new ClientCore(9999);
+        clientCore.run();
     }
 
     /**
@@ -112,20 +113,11 @@ public class LoginGUI extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        FlatIntelliJLaf.setup();
         FlatArcOrangeIJTheme.setup();
-        FlatCarbonIJTheme.setup();
-        FlatGradiantoMidnightBlueIJTheme.setup();
-        FlatGradiantoNatureGreenIJTheme.setup();
-        FlatGruvboxDarkSoftIJTheme.setup();
-        FlatNordIJTheme.setup();
-        FlatMonocaiIJTheme.setup();
-        FlatVuesionIJTheme.setup();
-        FlatSpacegrayIJTheme.setup();
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Flatlaf Light".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel( new FlatSpacegrayIJTheme() );
+                    javax.swing.UIManager.setLookAndFeel( new FlatArcOrangeIJTheme() );
                     break;
                 }
             }

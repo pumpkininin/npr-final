@@ -8,7 +8,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-public class ClientCore {
+public class ClientCore implements Runnable{
     private String clientName;
     private Socket clientSocket;
     private ObjectOutputStream oos;
@@ -17,12 +17,12 @@ public class ClientCore {
 
     public ClientCore( int port ) throws IOException {
         clientSocket = new Socket("localhost", port);
-
+        oos = new ObjectOutputStream(clientSocket.getOutputStream());
+        ois = new ObjectInputStream(clientSocket.getInputStream());
     }
+    @Override
     public void run() {
         try {
-            oos = new ObjectOutputStream(clientSocket.getOutputStream());
-            ois = new ObjectInputStream(clientSocket.getInputStream());
             while(clientSocket.isConnected()){
                 Message message = (Message) ois.readObject();
                 if(message != null){

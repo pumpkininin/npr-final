@@ -1,15 +1,16 @@
 package server;
 
 
-import com.formdev.flatlaf.FlatDarculaLaf;
 import com.formdev.flatlaf.FlatIntelliJLaf;
-import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.intellijthemes.FlatArcIJTheme;
+import com.formdev.flatlaf.intellijthemes.FlatArcOrangeIJTheme;
+import com.formdev.flatlaf.intellijthemes.FlatMaterialDesignDarkIJTheme;
+import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatDraculaIJTheme;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import java.util.Objects;
 
 /**
  *
@@ -49,11 +50,9 @@ public class ServerGUI extends javax.swing.JFrame {
         jList1 = new javax.swing.JList<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        ImageIcon icon = new ImageIcon("logo.png");
+        ImageIcon icon = new ImageIcon(getClass().getResource("/images/hanu.png"));
         JLabel iconLbl = new JLabel();
-        iconLbl.setIcon(icon);
-        logoPanel.add(iconLbl);
-//        logoPanel.setBackground(Color.RED);
+
         addrLbl.setText("Address");
 
         portLbl.setText("Port");
@@ -73,16 +72,17 @@ public class ServerGUI extends javax.swing.JFrame {
             }
         });
         stopBtn.setText("Stop");
+        iconLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/hanu.png"))); // NOI18N
 
         javax.swing.GroupLayout logoPanelLayout = new javax.swing.GroupLayout(logoPanel);
         logoPanel.setLayout(logoPanelLayout);
         logoPanelLayout.setHorizontalGroup(
                 logoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGap(0, 100, Short.MAX_VALUE)
+                        .addComponent(iconLbl, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         logoPanelLayout.setVerticalGroup(
                 logoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGap(0, 100, Short.MAX_VALUE)
+                        .addComponent(iconLbl, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout addrPanelLayout = new javax.swing.GroupLayout(addrPanel);
@@ -203,9 +203,9 @@ public class ServerGUI extends javax.swing.JFrame {
         // TODO add your handling code here:
     }
     private void startBtnActionPerformed(ActionEvent evt) throws IOException {
-        System.out.println(12);
-        System.out.println(logoPanel.getName());
+
         this.serverCore = new ServerCore(Integer.parseInt(portTf.getText()));
+
     }
 
     /**
@@ -217,18 +217,26 @@ public class ServerGUI extends javax.swing.JFrame {
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
          */
-        FlatIntelliJLaf.setup();
-
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Flatlaf Light".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel( new FlatIntelliJLaf() );
-                    break;
-                }
-            }
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(ServerGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
+        FlatArcOrangeIJTheme.setup();
+        UIManager.put( "Button.arc", 20 );
+        UIManager.put( "Component.arc", 10 );
+        UIManager.put( "ProgressBar.arc", 0 );
+        UIManager.put( "TabbedPane.selectedBackground", Color.white );
+        UIManager.put( "ScrollBar.trackInsets", new Insets( 2, 4, 2, 4 ) );
+        UIManager.put( "ScrollBar.thumbInsets", new Insets( 2, 2, 2, 2 ) );
+        UIManager.put( "ScrollBar.track", new Color( 0xe0e0e0 ) );
+//        FlatMaterialDesignDarkIJTheme.setup();
+//        try {
+//            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+//                if ("Flatlaf Light".equals(info.getName())) {
+//
+//                    javax.swing.UIManager.setLookAndFeel( new FlatArcIJTheme() );
+//                    break;
+//                }
+//            }
+//        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+//            java.util.logging.Logger.getLogger(ServerGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//        }
         //</editor-fold>
 
         /* Create and display the form */
