@@ -8,7 +8,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-public class ClientCore implements Runnable{
+public class ClientCore{
     private String clientName;
     private Socket clientSocket;
     private ObjectOutputStream oos;
@@ -20,30 +20,33 @@ public class ClientCore implements Runnable{
         oos = new ObjectOutputStream(clientSocket.getOutputStream());
         ois = new ObjectInputStream(clientSocket.getInputStream());
     }
-    @Override
-    public void run() {
-        try {
-            while(clientSocket.isConnected()){
-                Message message = (Message) ois.readObject();
-                if(message != null){
-                    switch (message.getMessageType()){
-                        case DUPLICATED_USER:
+    class ClientService extends Thread{
+        @Override
+        public void run() {
+            try {
+                while(clientSocket.isConnected()){
+                    Message message = (Message) ois.readObject();
+                    if(message != null){
+                        switch (message.getMessageType()){
+                            case DUPLICATED_USER:
 //                            register();
-                            break;
-                        case MSG:
-                            System.out.printf("message from %s to you with content: %s", message.getSender(), message.getContent());
-                            break;
-                        case UPDATE_LIST:
-                            break;
+                                break;
+                            case MSG:
+                                System.out.printf("message from %s to you with content: %s", message.getSender(), message.getContent());
+                                break;
+                            case UPDATE_LIST:
+                                break;
 
+                        }
                     }
                 }
+            } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace();
             }
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
 
+        }
     }
+
     public void sendMessage(Message message) throws IOException {
         switch (message.getMessageType()){
             case FILE:

@@ -17,7 +17,6 @@ public class LoginGUI extends javax.swing.JFrame {
     public LoginGUI() throws IOException {
         initComponents();
         this.clientCore = new ClientCore(9999);
-        clientCore.run();
     }
 
     /**
