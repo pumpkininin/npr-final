@@ -69,6 +69,7 @@ public class ClientCore{
         Message loginMsg = new Message();
         loginMsg.setSender(clientName);
         loginMsg.setMessageType(Message.MessageType.LOGIN);
+        loginMsg.setReceiverType(Message.ReceiverType.GROUP);
         oos.writeObject(loginMsg);
         oos.flush();
     }

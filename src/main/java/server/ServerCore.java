@@ -16,12 +16,14 @@ public class ServerCore{
     private HashMap<String, String> accountSet;
     private HashSet<String> activeSet;
     private ServerSocket serverSocket;
+    private ExecutorService executorService = Executors.newCachedThreadPool();;//thread pool
     public ServerCore(int port) throws IOException {
         serverSocket = new ServerSocket(port);
+        clientOs = new HashMap<>();
         accountSet = new HashMap<>();
         activeSet = new HashSet<>();
-        clientOs = new HashMap();
-        (new ServerService()).start();
+        ServerService clientThread = new ServerService();
+        executorService.execute(clientThread);
     }
 
     class ServerService extends Thread{
