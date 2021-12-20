@@ -8,14 +8,9 @@ import com.formdev.flatlaf.intellijthemes.FlatArcOrangeIJTheme;
 import server.ServerGUI;
 
 import java.awt.CardLayout;
-import java.awt.Color;
 import java.awt.Component;
-import static java.awt.Component.LEFT_ALIGNMENT;
-import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,11 +18,6 @@ import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
-
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  *
@@ -39,11 +29,10 @@ public class ChatGUI extends javax.swing.JFrame {
     JPanel chatContentPanel = new JPanel();
     JLabel receivedMessLbl = new JLable();
     JLabel yourMsgLbl = new JLable();
-
     JPanel userInfoPanel = new JPanel();
     JLabel userInfoLbl = new JLable();
     CardLayout cardLayout;
-    public final String CHAT_CONTENT_PANEL = "chat content panel";
+    public String CHAT_CONTENT_PANEL = "chat content panel";
 
     /**
      * Creates new form ChatGUI
@@ -51,6 +40,7 @@ public class ChatGUI extends javax.swing.JFrame {
     public ChatGUI() {
         initComponents();
         activeUserList.setModel(model);
+        activeUserList.setCellRenderer(new ListRender());
         List<User> users = new ArrayList<>();
         users.add(new User("All", "heyyyy"));
         users.add(new User("KhacHieu", "Hi! How are you?"));
@@ -58,6 +48,9 @@ public class ChatGUI extends javax.swing.JFrame {
         users.add(new User("ThanhTung", "Eiii"));
         users.add(new User("User4", "Alooooo"));
         users.add(new User("User5", "Aluuuuuuuuu"));
+        users.add(new User("user 6","asssss"));
+        users.add(new User("user 6","asssss"));
+        users.add(new User("user 6","asssss"));
         cardLayout = (CardLayout) chatPanel.getLayout();
         HashMap<String, JPanel> listPanel = new HashMap<>();
         for(User u : users){
@@ -83,7 +76,7 @@ public class ChatGUI extends javax.swing.JFrame {
 //                receivedMessLbl.setText(activeUser.getName() + ": " + activeUser.getMessage());
 //                receivedMessLbl.setFont(new Font("Verdana", Font.PLAIN, 15));
                 JPanel currentPanel = listPanel.get(activeUser.getName());
-
+                CHAT_CONTENT_PANEL = activeUser.getName();
                 cardLayout.show(chatPanel, activeUser.getName());
         });
 
@@ -279,10 +272,13 @@ public class ChatGUI extends javax.swing.JFrame {
 //        System.out.println(yourMsg);
         yourMsgLbl.setText(yourMsg);
         yourMsgLbl.setFont(new Font("Verdana", Font.PLAIN, 15));
-        chatContentPanel.add(yourMsgLbl);
-        cardLayout.show(chatPanel,CHAT_CONTENT_PANEL);
-
-
+        JPanel card = null;
+//        ((JPanel) chatPanel.getComponent(1)).add(yourMsgLbl);
+        for(Component p : chatPanel.getComponents()){
+            if(p.getName() == CHAT_CONTENT_PANEL){
+                ((JPanel) p).add(yourMsgLbl);
+            }
+        }
 
     }
 
@@ -317,7 +313,7 @@ public class ChatGUI extends javax.swing.JFrame {
         }
     }
 
-    private class User {
+    public static class User {
 
         String name;
         String message;
