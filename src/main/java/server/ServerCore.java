@@ -30,14 +30,14 @@ public class ServerCore{
 
     }
     public void startServer() throws IOException {
-        ServerSocket serverSocket = new ServerSocket(port);
+        this.serverSocket = new ServerSocket(port);
         console.append("running");
-        console.append("on port " + port);
+        console.append(" on port " + port +"\n");
         while (true){
             Socket socket = serverSocket.accept();
-
+            System.out.println(socket);
             ServerService serverService = new ServerService(socket);
-            executorService.execute(serverService);
+            serverService.start();
         }
     }
     class ServerService extends Thread{
@@ -51,8 +51,6 @@ public class ServerCore{
         @Override
         public void run() {
             try{
-                this.clientSocket =  serverSocket.accept();
-                System.out.println("new client");
                 ois = new ObjectInputStream(clientSocket.getInputStream());
                 oos = new ObjectOutputStream(clientSocket.getOutputStream());
                 while(true){
@@ -125,11 +123,15 @@ public class ServerCore{
                     response.setMessageType(Message.MessageType.DUPLICATED_USER);
                     oos.writeObject(response);
                     oos.flush();
+                    oos.reset();
+                    return;
                 }
             }
+            System.out.println(message.getSender());
             clientOs.put(message.getSender(), oos);
             accountSet.put(message.getSender(), message.getContent());
             activeSet.add(message.getSender());
+            console.append("New user: " + message.getSender() + " has been registered!\n");
             notifyToAllUsers(message.getSender());
         }
         private void login(Message msg) throws IOException {

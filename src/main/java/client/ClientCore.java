@@ -2,6 +2,7 @@ package client;
 
 import data.Message;
 
+import javax.swing.*;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -14,39 +15,25 @@ public class ClientCore{
     private ObjectOutputStream oos;
     private ObjectInputStream ois;
     private FileInputStream fileInputStream;
-
-    public ClientCore( int port ) throws IOException {
-        clientSocket = new Socket("localhost", port);
-        oos = new ObjectOutputStream(clientSocket.getOutputStream());
-        ois = new ObjectInputStream(clientSocket.getInputStream());
+    private int port;
+    private JFrame loginFrame;
+    public ClientCore(){
     }
-    class ClientService extends Thread{
-        @Override
-        public void run() {
-            try {
-                while(clientSocket.isConnected()){
-                    Message message = (Message) ois.readObject();
-                    if(message != null){
-                        switch (message.getMessageType()){
-                            case DUPLICATED_USER:
-//                            register();
-                                break;
-                            case MSG:
-                                System.out.printf("message from %s to you with content: %s", message.getSender(), message.getContent());
-                                break;
-                            case UPDATE_LIST:
-                                break;
-
-                        }
-                    }
-                }
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-
-        }
+    public void startClient() throws IOException {
+        this.clientSocket = new Socket("localhost", 9999);
+        this.oos = new ObjectOutputStream(clientSocket.getOutputStream());
+        this.ois = new ObjectInputStream(clientSocket.getInputStream());
+        listenResponse();
     }
-
+    public void register(String username,String password) throws IOException {
+        this.clientName = username;
+        Message loginMsg = new Message();
+        loginMsg.setSender(clientName);
+        loginMsg.setMessageType(Message.MessageType.REGISTER);
+        loginMsg.setReceiverType(Message.ReceiverType.GROUP);
+        oos.writeObject(loginMsg);
+        oos.flush();
+    }
     public void sendMessage(Message message) throws IOException {
         switch (message.getMessageType()){
             case FILE:
@@ -64,13 +51,45 @@ public class ClientCore{
         }
 
     }
-    public void register(String username,String password) throws IOException {
-        this.clientName = username;
-        Message loginMsg = new Message();
-        loginMsg.setSender(clientName);
-        loginMsg.setMessageType(Message.MessageType.LOGIN);
-        loginMsg.setReceiverType(Message.ReceiverType.GROUP);
-        oos.writeObject(loginMsg);
+    public void login(String username, String password) throws IOException {
+        Message message = new Message();
+        message.setSender(username);
+        message.setContent(password);
+        message.setMessageType(Message.MessageType.LOGIN);
+        message.setReceiverType(Message.ReceiverType.GROUP);
+        oos.writeObject(message);
         oos.flush();
     }
+    private void listenResponse(){
+        Runnable runnable = () -> {
+            try {
+                while(clientSocket.isConnected()){
+                    Message message = (Message) ois.readObject();
+                    if(message != null){
+                        switch (message.getMessageType()){
+                            case DUPLICATED_USER:
+//                            register();
+                                break;
+                            case MSG:
+                                System.out.printf("message from %s to you with content: %s", message.getSender(), message.getContent());
+                                break;
+                            case UPDATE_LIST:
+                                break;
+                            case REGISTER_SUCCESS:
+                                System.out.println("registersuccess");
+                                break;
+
+                        }
+                    }
+                }
+            } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+
+        };
+    }
+
+
+
+
 }
