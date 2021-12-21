@@ -14,10 +14,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import javax.swing.DefaultListModel;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
+import javax.swing.*;
 
 /**
  *
@@ -175,7 +172,6 @@ public class ChatGUI extends javax.swing.JFrame {
         );
 
         infoPanel.setLayout(new java.awt.CardLayout());
-
         chatPanel.setLayout(new java.awt.CardLayout());
 
         fileBtn.setText("FILE");

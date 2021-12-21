@@ -2,6 +2,7 @@ package server;
 
 import data.Message;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -16,27 +17,40 @@ public class ServerCore{
     private HashMap<String, String> accountSet;
     private HashSet<String> activeSet;
     private ServerSocket serverSocket;
+    private JLabel lbSeverStatus;
+    private int port;
     private ExecutorService executorService = Executors.newCachedThreadPool();;//thread pool
-    public ServerCore(int port) throws IOException {
-        serverSocket = new ServerSocket(port);
+    private JTextArea console;
+    public ServerCore(int port, JTextArea jTextArea) throws IOException {
+        this.port = port;
+        this.console = jTextArea;
         clientOs = new HashMap<>();
         accountSet = new HashMap<>();
         activeSet = new HashSet<>();
-        ServerService clientThread = new ServerService();
-        executorService.execute(clientThread);
-    }
 
+    }
+    public void startServer() throws IOException {
+        this.serverSocket = new ServerSocket(port);
+        console.append("running");
+        console.append(" on port " + port +"\n");
+        while (true){
+            Socket socket = serverSocket.accept();
+            System.out.println(socket);
+            ServerService serverService = new ServerService(socket);
+            serverService.start();
+        }
+    }
     class ServerService extends Thread{
         private String clientName;
         private Socket clientSocket;
         private ObjectInputStream ois;
         private ObjectOutputStream oos;
-
+        public ServerService(Socket socket){
+            this.clientSocket = socket;
+        }
         @Override
         public void run() {
             try{
-                this.clientSocket =  serverSocket.accept();
-                System.out.println("new client");
                 ois = new ObjectInputStream(clientSocket.getInputStream());
                 oos = new ObjectOutputStream(clientSocket.getOutputStream());
                 while(true){
@@ -109,11 +123,15 @@ public class ServerCore{
                     response.setMessageType(Message.MessageType.DUPLICATED_USER);
                     oos.writeObject(response);
                     oos.flush();
+                    oos.reset();
+                    return;
                 }
             }
+            System.out.println(message.getSender());
             clientOs.put(message.getSender(), oos);
             accountSet.put(message.getSender(), message.getContent());
             activeSet.add(message.getSender());
+            console.append("New user: " + message.getSender() + " has been registered!\n");
             notifyToAllUsers(message.getSender());
         }
         private void login(Message msg) throws IOException {

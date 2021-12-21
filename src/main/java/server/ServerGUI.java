@@ -48,11 +48,13 @@ public class ServerGUI extends javax.swing.JFrame {
         listPanel = new javax.swing.JPanel();
         listScroll = new javax.swing.JScrollPane();
         jList1 = new javax.swing.JList<>();
-
+        textArea = new JTextArea();
+        serverStatus = new JLabel();
+        consolePanel.setEditable(false);
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         ImageIcon icon = new ImageIcon(getClass().getResource("/images/hanu.png"));
         JLabel iconLbl = new JLabel();
-
+        logPanel.add(serverStatus);
         addrLbl.setText("Address");
 
         portLbl.setText("Port");
@@ -203,9 +205,19 @@ public class ServerGUI extends javax.swing.JFrame {
         // TODO add your handling code here:
     }
     private void startBtnActionPerformed(ActionEvent evt) throws IOException {
+        this.serverCore = new ServerCore(Integer.parseInt(portTf.getText()), consolePanel);
+        Thread th  = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    serverCore.startServer();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            };
+        };
 
-        this.serverCore = new ServerCore(Integer.parseInt(portTf.getText()));
-
+        th.start();
     }
 
     /**
@@ -262,5 +274,7 @@ public class ServerGUI extends javax.swing.JFrame {
     private javax.swing.JButton startBtn;
     private javax.swing.JButton stopBtn;
     private javax.swing.JPanel logoPanel;
+    private javax.swing.JTextArea textArea;
+    private javax.swing.JLabel serverStatus;
     // End of variables declaration
 }
