@@ -7,14 +7,15 @@ package client;/*
 import com.formdev.flatlaf.intellijthemes.FlatArcOrangeIJTheme;
 import server.ServerGUI;
 
-import java.awt.CardLayout;
-import java.awt.Component;
-import java.awt.Font;
+import java.awt.*;
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 
 /**
  *
@@ -29,6 +30,8 @@ public class ChatGUI extends javax.swing.JFrame {
     JPanel userInfoPanel = new JPanel();
     JLabel userInfoLbl = new JLable();
     CardLayout cardLayout;
+    private JPanel currentChatPanel;
+    private Box box =  Box.createVerticalBox();
     public String CHAT_CONTENT_PANEL = "chat content panel";
 
     /**
@@ -52,7 +55,7 @@ public class ChatGUI extends javax.swing.JFrame {
         HashMap<String, JPanel> listPanel = new HashMap<>();
         for(User u : users){
             model.addElement(u);
-            JPanel newPanel = new JPanel();
+            JPanel newPanel = initChatPanel(u.getName());
             JLabel newLabel = new JLabel();
             newLabel.setText(u.getName());
             newPanel.add(newLabel);
@@ -67,13 +70,7 @@ public class ChatGUI extends javax.swing.JFrame {
                 return;
             }
                 User activeUser = activeUserList.getSelectedValue();
-//                userInfoLbl.setText(activeUser.getName());
-//                userInfoLbl.setFont(new Font("Verdana", Font.PLAIN, 25));
-//                infoPanel.add(userInfoLbl);
-//                receivedMessLbl.setText(activeUser.getName() + ": " + activeUser.getMessage());
-//                receivedMessLbl.setFont(new Font("Verdana", Font.PLAIN, 15));
-                JPanel currentPanel = listPanel.get(activeUser.getName());
-                CHAT_CONTENT_PANEL = activeUser.getName();
+                this.currentChatPanel = listPanel.get(activeUser.getName());
                 cardLayout.show(chatPanel, activeUser.getName());
         });
 
@@ -184,6 +181,7 @@ public class ChatGUI extends javax.swing.JFrame {
         sendBtn.setText("SEND");
         sendBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
+                System.out.println("1");
                 sendBtnActionPerformed(evt);
             }
         });
@@ -265,19 +263,37 @@ public class ChatGUI extends javax.swing.JFrame {
     private void sendBtnActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO add your handling code here:
         String yourMsg= msgT.getText();
-//        System.out.println(yourMsg);
-        yourMsgLbl.setText(yourMsg);
-        yourMsgLbl.setFont(new Font("Verdana", Font.PLAIN, 15));
-        JPanel card = null;
-//        ((JPanel) chatPanel.getComponent(1)).add(yourMsgLbl);
-        for(Component p : chatPanel.getComponents()){
-            if(p.getName() == CHAT_CONTENT_PANEL){
-                ((JPanel) p).add(yourMsgLbl);
-            }
-        }
-
+        System.out.println(yourMsg);
+        JPanel textPanel = formatLabel(yourMsg);
+        this.currentChatPanel.setLayout(new BorderLayout());
+        JPanel right = new JPanel(new BorderLayout());
+        right.add(textPanel, BorderLayout.LINE_END);
+        box.add(right);
+        box.add(Box.createVerticalStrut(15));
+        currentChatPanel.add(box, BorderLayout.PAGE_START);
     }
-
+    private JPanel initChatPanel(String username){
+        JPanel chatPanel = new JPanel();
+        chatPanel.setName(username);
+        return chatPanel;
+    }
+    private JPanel formatLabel(String text){
+        JPanel j3 = new JPanel();
+        j3.setLayout(new BoxLayout(j3, BoxLayout.Y_AXIS));
+        JLabel l3 = new JLabel("<html><p style = \"width : 150px\">"+text+"</p></html>");
+        System.out.println(l3);
+        l3.setFont(new Font("Tahoma", Font.PLAIN, 16));
+        l3.setBackground(new Color(37, 211, 102));
+        l3.setOpaque(true);
+        l3.setBorder(new EmptyBorder(15,15,15,50));
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+        JLabel l2 = new JLabel();
+        l2.setText(sdf.format(cal.getTime()));
+        j3.add(l3);
+        j3.add(l2);
+        return j3;
+    }
     /**
      * @param args the command line arguments
      */
