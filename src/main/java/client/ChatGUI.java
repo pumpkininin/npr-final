@@ -52,10 +52,10 @@ public class ChatGUI extends javax.swing.JFrame {
         users.add(new User("user 6","asssss"));
         users.add(new User("user 6","asssss"));
         cardLayout = (CardLayout) chatPanel.getLayout();
-        HashMap<String, JPanel> listPanel = new HashMap<>();
+        HashMap<String, JScrollPane> listPanel = new HashMap<>();
         for(User u : users){
             model.addElement(u);
-            JPanel newPanel = initChatPanel(u.getName());
+            JScrollPane newPanel = initChatPanel(u.getName());
             JLabel newLabel = new JLabel();
             newLabel.setText(u.getName());
             newPanel.add(newLabel);
@@ -70,7 +70,6 @@ public class ChatGUI extends javax.swing.JFrame {
                 return;
             }
                 User activeUser = activeUserList.getSelectedValue();
-                this.currentChatPanel = listPanel.get(activeUser.getName());
                 cardLayout.show(chatPanel, activeUser.getName());
         });
 
@@ -181,7 +180,6 @@ public class ChatGUI extends javax.swing.JFrame {
         sendBtn.setText("SEND");
         sendBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                System.out.println("1");
                 sendBtnActionPerformed(evt);
             }
         });
@@ -263,7 +261,6 @@ public class ChatGUI extends javax.swing.JFrame {
     private void sendBtnActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO add your handling code here:
         String yourMsg= msgT.getText();
-        System.out.println(yourMsg);
         JPanel textPanel = formatLabel(yourMsg);
         this.currentChatPanel.setLayout(new BorderLayout());
         JPanel right = new JPanel(new BorderLayout());
@@ -272,10 +269,12 @@ public class ChatGUI extends javax.swing.JFrame {
         box.add(Box.createVerticalStrut(15));
         currentChatPanel.add(box, BorderLayout.PAGE_START);
     }
-    private JPanel initChatPanel(String username){
+    private JScrollPane initChatPanel(String username){
+        JScrollPane scrollPane = new JScrollPane();
         JPanel chatPanel = new JPanel();
+        scrollPane.setViewportView(chatPanel);
         chatPanel.setName(username);
-        return chatPanel;
+        return scrollPane;
     }
     private JPanel formatLabel(String text){
         JPanel j3 = new JPanel();
@@ -290,8 +289,8 @@ public class ChatGUI extends javax.swing.JFrame {
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
         JLabel l2 = new JLabel();
         l2.setText(sdf.format(cal.getTime()));
-        j3.add(l3);
         j3.add(l2);
+        j3.add(l3);
         return j3;
     }
     /**
