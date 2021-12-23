@@ -63,10 +63,13 @@ public class ServerCore{
                             case GROUP:
                                 if(msg.getMessageType() == Message.MessageType.REGISTER){
                                     register(msg);
+                                    notifyToAllUsers(msg.getSender());
                                 }else if(msg.getMessageType() == Message.MessageType.LOGIN){
                                     login(msg);
+                                    notifyToAllUsers(msg.getSender());
                                 }else if(msg.getMessageType() == Message.MessageType.LOGOUT){
                                     logout(msg);
+                                    notifyToAllUsers(msg.getSender());
                                 }else if(msg.getMessageType() == Message.MessageType.MSG){
                                     transferToAll(msg);
                                 }
@@ -127,19 +130,28 @@ public class ServerCore{
                     return;
                 }
             }
-            System.out.println(message.getSender());
             clientOs.put(message.getSender(), oos);
             accountSet.put(message.getSender(), message.getContent());
             activeSet.add(message.getSender());
             console.append("New user: " + message.getSender() + " has been registered!\n");
-            notifyToAllUsers(message.getSender());
+            response.setMessageType(Message.MessageType.REGISTER_SUCCESS);
+            System.out.println(new ArrayList<>(activeSet));
+            oos.writeObject(response);
+            oos.flush();
+            oos.reset();
+//            notifyToAllUsers(message.getSender());
         }
         private void login(Message msg) throws IOException {
             Message response = new Message();
-            if(accountSet.get(msg.getSender()) == msg.getContent()){
+            System.out.println("2. "+accountSet.get(msg.getSender()));
+            System.out.println("2. "+msg.getContent());
+            if(accountSet.get(msg.getSender()).equals(msg.getContent())){
                 clientOs.put(msg.getSender(), oos);
                 activeSet.add(msg.getSender());
-                notifyToAllUsers(msg.getSender());
+                response.setMessageType(Message.MessageType.LOGIN_SUCCESS);
+                response.setActiveList(new ArrayList<>(activeSet));
+                oos.writeObject(response);
+                oos.flush();
             }else{
                 response.setMessageType(Message.MessageType.WRONG_USERNAME_PASSWORD);
                 oos.writeObject(response);

@@ -22,7 +22,7 @@ import javax.swing.*;
  */
 public class ChatGUI extends javax.swing.JFrame {
 
-    DefaultListModel<User> model = new DefaultListModel<>();
+    DefaultListModel<String> model = new DefaultListModel<>();
     JPanel chatContentPanel = new JPanel();
     JLabel receivedMessLbl = new JLable();
     JLabel yourMsgLbl = new JLable();
@@ -34,31 +34,33 @@ public class ChatGUI extends javax.swing.JFrame {
     /**
      * Creates new form ChatGUI
      */
-    public ChatGUI() {
+    public ChatGUI(ClientCore clientCore, List<String> activeList) {
         initComponents();
+        FlatArcOrangeIJTheme.setup();
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Flatlaf Light".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel( new FlatArcOrangeIJTheme() );
+                    break;
+                }
+            }
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(ServerGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
         activeUserList.setModel(model);
         activeUserList.setCellRenderer(new ListRender());
-        List<User> users = new ArrayList<>();
-        users.add(new User("All", "heyyyy"));
-        users.add(new User("KhacHieu", "Hi! How are you?"));
-        users.add(new User("ThanhHuyen", "Xin chao"));
-        users.add(new User("ThanhTung", "Eiii"));
-        users.add(new User("User4", "Alooooo"));
-        users.add(new User("User5", "Aluuuuuuuuu"));
-        users.add(new User("user 6","asssss"));
-        users.add(new User("user 6","asssss"));
-        users.add(new User("user 6","asssss"));
+        List<String> users = activeList;
         cardLayout = (CardLayout) chatPanel.getLayout();
         HashMap<String, JPanel> listPanel = new HashMap<>();
-        for(User u : users){
+        for(String u : users){
             model.addElement(u);
             JPanel newPanel = new JPanel();
             JLabel newLabel = new JLabel();
-            newLabel.setText(u.getName());
+            newLabel.setText(u);
             newPanel.add(newLabel);
-            newPanel.setName(u.getName());
-            listPanel.put(u.getName(), newPanel);
-            chatPanel.add(u.getName(), newPanel);
+            newPanel.setName(u);
+            listPanel.put(u, newPanel);
+            chatPanel.add(u, newPanel);
         }
         activeUserList.getSelectionModel().addListSelectionListener(e ->  {
             if (e.getValueIsAdjusting())
@@ -66,17 +68,17 @@ public class ChatGUI extends javax.swing.JFrame {
                 //System.out.println("Adjusting. Ignore this");
                 return;
             }
-                User activeUser = activeUserList.getSelectedValue();
+                String activeUser = activeUserList.getSelectedValue();
 //                userInfoLbl.setText(activeUser.getName());
 //                userInfoLbl.setFont(new Font("Verdana", Font.PLAIN, 25));
 //                infoPanel.add(userInfoLbl);
 //                receivedMessLbl.setText(activeUser.getName() + ": " + activeUser.getMessage());
 //                receivedMessLbl.setFont(new Font("Verdana", Font.PLAIN, 15));
-                JPanel currentPanel = listPanel.get(activeUser.getName());
-                CHAT_CONTENT_PANEL = activeUser.getName();
-                cardLayout.show(chatPanel, activeUser.getName());
+                JPanel currentPanel = listPanel.get(activeUser);
+                CHAT_CONTENT_PANEL = activeUser;
+                cardLayout.show(chatPanel, activeUser);
         });
-
+        setVisible(true);
     }
 
     /**
@@ -278,30 +280,6 @@ public class ChatGUI extends javax.swing.JFrame {
 
     }
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        FlatArcOrangeIJTheme.setup();
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Flatlaf Light".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel( new FlatArcOrangeIJTheme() );
-                    break;
-                }
-            }
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(ServerGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new ChatGUI().setVisible(true);
-            }
-        });
-    }
 
     private static class JLable extends JLabel {
 
@@ -347,7 +325,7 @@ public class ChatGUI extends javax.swing.JFrame {
     private javax.swing.JPanel activeInfoPanel;
     private javax.swing.JPanel activePanel;
     private javax.swing.JScrollPane activeScroll;
-    private javax.swing.JList<User> activeUserList;
+    private javax.swing.JList<String> activeUserList;
     private javax.swing.JLabel activeUsersLbl;
     private javax.swing.JPanel chatPanel;
     private javax.swing.JLabel countLbl;

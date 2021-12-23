@@ -16,11 +16,13 @@ public class ClientCore{
     private ObjectInputStream ois;
     private FileInputStream fileInputStream;
     private int port;
-    private JFrame loginFrame;
-    public ClientCore(){
+    private LoginGUI loginFrame;
+    public ClientCore(LoginGUI jFrame){
+        this.loginFrame = jFrame;
     }
     public void startClient() throws IOException {
         this.clientSocket = new Socket("localhost", 9999);
+
         this.oos = new ObjectOutputStream(clientSocket.getOutputStream());
         this.ois = new ObjectInputStream(clientSocket.getInputStream());
         listenResponse();
@@ -29,6 +31,7 @@ public class ClientCore{
         this.clientName = username;
         Message loginMsg = new Message();
         loginMsg.setSender(clientName);
+        loginMsg.setContent(password);
         loginMsg.setMessageType(Message.MessageType.REGISTER);
         loginMsg.setReceiverType(Message.ReceiverType.GROUP);
         oos.writeObject(loginMsg);
@@ -65,10 +68,11 @@ public class ClientCore{
             try {
                 while(clientSocket.isConnected()){
                     Message message = (Message) ois.readObject();
+                    System.out.println(message.getActiveList());
                     if(message != null){
                         switch (message.getMessageType()){
                             case DUPLICATED_USER:
-//                            register();
+                                this.loginFrame.notifyDuplicate();
                                 break;
                             case MSG:
                                 System.out.printf("message from %s to you with content: %s", message.getSender(), message.getContent());
@@ -76,7 +80,12 @@ public class ClientCore{
                             case UPDATE_LIST:
                                 break;
                             case REGISTER_SUCCESS:
-                                System.out.println("registersuccess");
+                                this.loginFrame.notifySuccess();
+                                break;
+                            case LOGIN_SUCCESS:
+                                this.loginFrame.setVisible(false);
+                                System.out.println(message.getActiveList());
+                                ChatGUI chatGUI = new ChatGUI(this, message.getActiveList());
                                 break;
 
                         }
@@ -87,6 +96,8 @@ public class ClientCore{
             }
 
         };
+        Thread th = new Thread(runnable);
+        th.start();
     }
 
 
