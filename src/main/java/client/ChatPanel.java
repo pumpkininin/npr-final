@@ -133,7 +133,7 @@ public class ChatPanel extends javax.swing.JPanel {
         if(msg.equals("")){
             return;
         }
-        JPanel p2 = formatLabel(msg);
+        JPanel p2 = formatLabel(msg, "");
         chatPnl.setLayout(new BorderLayout());
         JPanel right = new JPanel(new BorderLayout());
         right.add(p2, BorderLayout.LINE_END);
@@ -143,6 +143,7 @@ public class ChatPanel extends javax.swing.JPanel {
         Message newMsg = new Message();
         if(this.name.equals("ALL")){
             newMsg.setReceiverType(Message.ReceiverType.GROUP);
+            newMsg.setSender(clientCore.getClientName());
         }else{
             newMsg.setReceiver(this.name);
             newMsg.setReceiverType(Message.ReceiverType.PERSON);
@@ -154,7 +155,7 @@ public class ChatPanel extends javax.swing.JPanel {
         jTextArea1.setText("");
         validate();
     }
-    private JPanel formatLabel(String msg){
+    private JPanel formatLabel(String msg, String sender){
         JPanel p3 = new JPanel();
         p3.setLayout(new BoxLayout(p3, BoxLayout.Y_AXIS));
         JLabel l1 = new JLabel("<html><p style = \"width : 150px\">"+msg+"</p></html>");
@@ -163,22 +164,22 @@ public class ChatPanel extends javax.swing.JPanel {
         l1.setForeground(new JList<>().getSelectionForeground());
         l1.setOpaque(true);
         l1.setBorder(new EmptyBorder(15,15,15,50));
-
+        JLabel l2 = new JLabel();
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
-
-        JLabel l2 = new JLabel();
-        l2.setText(sdf.format(cal.getTime()));
-        p3.add(l1);
+        if(sender ==""){
+            l2.setText(sdf.format(cal.getTime()));
+        }else{
+            l2.setText(sender+" ("+sdf.format(cal.getTime())+")");
+        }
         p3.add(l2);
+        p3.add(l1);
         return p3;
     }
-    public void appendNewMsg(String msg){
-        System.out.println(msg);
-        JPanel p2 = formatLabel(msg);
+    public void appendNewMsg(String msg, String sender){
+        JPanel p2 = formatLabel(msg, sender);
         JPanel left = new JPanel(new BorderLayout());
         left.add(p2, BorderLayout.LINE_START);
-
         vertical.add(left);
         vertical.add(Box.createVerticalStrut(15));
         chatPnl.add(vertical, BorderLayout.PAGE_START);

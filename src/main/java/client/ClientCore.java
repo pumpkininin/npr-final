@@ -95,6 +95,7 @@ public class ClientCore{
                             case LOGIN_SUCCESS:
                                 this.loginFrame.setVisible(false);
                                 active = message.getActiveList().stream().filter(user -> !user.equals(this.clientName)).collect(Collectors.toList());
+                                chatGUI.setName(this.clientName);
                                 chatGUI.setVisible(true);
                                 chatGUI.updateList(active);
                                 break;

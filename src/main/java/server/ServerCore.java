@@ -85,9 +85,18 @@ public class ServerCore{
         }
 
         private void transferToAll(Message msg) throws IOException {
-            for(ObjectOutputStream os : clientOs.values()){
-                os.writeObject(msg);
-                os.flush();
+            System.out.println(msg.getSender());
+            for(String key : clientOs.keySet()){
+                System.out.println("key: "+ key);
+                if(key.equals(msg.getSender())){
+                    System.out.println(key);
+                    continue;
+                }else{
+                    ObjectOutputStream os = clientOs.get(key);
+                    os.writeObject(msg);
+                    os.flush();
+                }
+
             }
         }
 

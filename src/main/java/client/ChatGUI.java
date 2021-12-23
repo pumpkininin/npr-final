@@ -47,7 +47,6 @@ public class ChatGUI extends javax.swing.JFrame {
                 userInfoLbl.setText(activeUser);
                 userInfoLbl.setFont(new Font("Verdana", Font.PLAIN, 25));
                 infoPanel.add(userInfoLbl);
-                JPanel currentPanel = listPanel.get(activeUser);
                 cardLayout.show(chatPanel, activeUser);
         });
     }
@@ -201,11 +200,14 @@ public class ChatGUI extends javax.swing.JFrame {
 
     public void updateMsg(Message message) {
         String sender = message.getSender();
-        ChatPanel senderPanel = (ChatPanel) listPanel.get(sender);
-        System.out.println(listPanel.keySet());
-        System.out.println();
-        System.out.println(senderPanel.getName());
-        senderPanel.appendNewMsg(message.getContent());
+        if(message.getReceiverType() == Message.ReceiverType.GROUP){
+            ChatPanel allPanel = listPanel.get("ALL");
+            allPanel.appendNewMsg(message.getContent(), sender);
+            return;
+        }
+        ChatPanel senderPanel = listPanel.get(sender);
+        senderPanel.appendNewMsg(message.getContent(), "");
+
     }
 
 
