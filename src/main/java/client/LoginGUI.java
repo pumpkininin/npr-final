@@ -46,7 +46,7 @@ public class LoginGUI extends javax.swing.JFrame {
         usernameTf = new javax.swing.JTextField();
         usernameLbl = new javax.swing.JLabel();
         passLbl = new javax.swing.JLabel();
-        passTf = new javax.swing.JTextField();
+        passTf = new javax.swing.JPasswordField();
         registerBtn = new javax.swing.JButton();
         loginBtn = new javax.swing.JButton();
         logoPanel = new javax.swing.JPanel();
@@ -193,7 +193,7 @@ public class LoginGUI extends javax.swing.JFrame {
     private javax.swing.JLabel logoLbl;
     private javax.swing.JPanel logoPanel;
     private javax.swing.JLabel passLbl;
-    private javax.swing.JTextField passTf;
+    private javax.swing.JPasswordField passTf;
     private javax.swing.JButton registerBtn;
     private javax.swing.JLabel usernameLbl;
     private javax.swing.JTextField usernameTf;

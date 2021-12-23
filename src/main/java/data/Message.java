@@ -9,6 +9,7 @@ public class Message implements Serializable {
     private MessageType messageType;
     private List<String> activeList;
     private String content;
+    private String fileId;
     private ReceiverType receiverType;
     private byte[] fileData;
     public Message() {
@@ -68,6 +69,14 @@ public class Message implements Serializable {
 
     public void setReceiver(String receiver) {
         this.receiver = receiver;
+    }
+
+    public String getFileId() {
+        return fileId;
+    }
+
+    public void setFileId(String fileId) {
+        this.fileId = fileId;
     }
 
 

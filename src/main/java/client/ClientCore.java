@@ -1,5 +1,6 @@
 package client;
 
+import data.FileObject;
 import data.Message;
 
 import javax.swing.*;
@@ -8,6 +9,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,6 +25,7 @@ public class ClientCore{
     private List<String> active;
     private LoginGUI loginFrame;
     private ChatGUI chatGUI;
+    private HashMap<String, FileObject> fileObjects = new HashMap<>();
     public ClientCore(LoginGUI jFrame){
         this.loginFrame = jFrame;
     }
@@ -45,20 +50,8 @@ public class ClientCore{
         return clientName;
     }
     public void sendMessage(Message message) throws IOException {
-        switch (message.getMessageType()){
-            case FILE:
-                byte[] file = message.getFileData();
-                int bytes = 0;
-                byte[] buffer = new byte[4*1024];
-                while ((bytes=fileInputStream.read(buffer)) != -1){
-                    oos.write(buffer, 0, bytes);
-                    oos.flush();
-                }
-                break;
-            case MSG:
-                oos.writeObject(message);
-                oos.flush();
-        }
+         oos.writeObject(message);
+         oos.flush();
 
     }
     public void login(String username, String password) throws IOException {
@@ -99,6 +92,13 @@ public class ClientCore{
                                 chatGUI.setVisible(true);
                                 chatGUI.updateList(active);
                                 break;
+                            case FILE:
+                                String fileName = message.getContent();
+                                byte[] fileData = message.getFileData();
+                                String fileId =message.getFileId();
+                                FileObject fileObject = new FileObject(fileId, fileName, fileData);
+                                fileObjects.put(fileId, fileObject);
+                                chatGUI.updateMsg(message);
                             default:
                                 break;
                         }
@@ -114,6 +114,7 @@ public class ClientCore{
     }
 
 
-
-
+    public FileObject getStoredFile(String fileId) {
+        return fileObjects.get(fileId);
+    }
 }

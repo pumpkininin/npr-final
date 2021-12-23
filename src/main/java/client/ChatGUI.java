@@ -185,6 +185,22 @@ public class ChatGUI extends javax.swing.JFrame {
         }
     }
 
+    public void updateMsg(Message message) {
+        if(message.getMessageType() == Message.MessageType.FILE){
+
+        }else{
+
+        }
+        String sender = message.getSender();
+        if(message.getReceiverType() == Message.ReceiverType.GROUP){
+            ChatPanel allPanel = listPanel.get("ALL");
+            allPanel.appendNewMsg(message, sender);
+            return;
+        }
+        ChatPanel senderPanel = listPanel.get(sender);
+        senderPanel.appendNewMsg(message, "");
+
+    }
 
 
     // Variables declaration - do not modify
@@ -198,17 +214,6 @@ public class ChatGUI extends javax.swing.JFrame {
     private javax.swing.JPanel infoPanel;
     private javax.swing.JScrollPane msgJSP;
 
-    public void updateMsg(Message message) {
-        String sender = message.getSender();
-        if(message.getReceiverType() == Message.ReceiverType.GROUP){
-            ChatPanel allPanel = listPanel.get("ALL");
-            allPanel.appendNewMsg(message.getContent(), sender);
-            return;
-        }
-        ChatPanel senderPanel = listPanel.get(sender);
-        senderPanel.appendNewMsg(message.getContent(), "");
-
-    }
 
 
     // End of variables declaration
