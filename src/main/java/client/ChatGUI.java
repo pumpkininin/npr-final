@@ -5,74 +5,51 @@ package client;/*
 
 
 import com.formdev.flatlaf.intellijthemes.FlatArcOrangeIJTheme;
+import data.Message;
 import server.ServerGUI;
 
 import java.awt.*;
 import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 
 /**
  *
  * @author nkhieu
  */
 public class ChatGUI extends javax.swing.JFrame {
-
-    DefaultListModel<User> model = new DefaultListModel<>();
+    private ClientCore clientCore;
+    DefaultListModel<String> model = new DefaultListModel<>();
+    HashMap<String, ChatPanel> listPanel = new HashMap<>();
     JPanel chatContentPanel = new JPanel();
-    JLabel receivedMessLbl = new JLable();
-    JLabel yourMsgLbl = new JLable();
     JPanel userInfoPanel = new JPanel();
-    JLabel userInfoLbl = new JLable();
+    JLabel userInfoLbl = new JLabel();
     CardLayout cardLayout;
-    private JPanel currentChatPanel;
-    private Box box =  Box.createVerticalBox();
-    public String CHAT_CONTENT_PANEL = "chat content panel";
 
     /**
      * Creates new form ChatGUI
      */
-    public ChatGUI() {
+    public ChatGUI(ClientCore clientCore, List<String> activeList) {
+        this.clientCore = clientCore;
         initComponents();
+        FlatArcOrangeIJTheme.setup();
         activeUserList.setModel(model);
         activeUserList.setCellRenderer(new ListRender());
-        List<User> users = new ArrayList<>();
-        users.add(new User("All", "heyyyy"));
-        users.add(new User("KhacHieu", "Hi! How are you?"));
-        users.add(new User("ThanhHuyen", "Xin chao"));
-        users.add(new User("ThanhTung", "Eiii"));
-        users.add(new User("User4", "Alooooo"));
-        users.add(new User("User5", "Aluuuuuuuuu"));
-        users.add(new User("user 6","asssss"));
-        users.add(new User("user 6","asssss"));
-        users.add(new User("user 6","asssss"));
         cardLayout = (CardLayout) chatPanel.getLayout();
-        HashMap<String, JScrollPane> listPanel = new HashMap<>();
-        for(User u : users){
-            model.addElement(u);
-            JScrollPane newPanel = initChatPanel(u.getName());
-            JLabel newLabel = new JLabel();
-            newLabel.setText(u.getName());
-            newPanel.add(newLabel);
-            newPanel.setName(u.getName());
-            listPanel.put(u.getName(), newPanel);
-            chatPanel.add(u.getName(), newPanel);
-        }
+        model.addElement("ALL");
+        ChatPanel newPanel = new ChatPanel("ALL", this.clientCore);
+        listPanel.put("ALL", newPanel);
+        chatPanel.add("ALL", newPanel);
         activeUserList.getSelectionModel().addListSelectionListener(e ->  {
-            if (e.getValueIsAdjusting())
-            {
-                //System.out.println("Adjusting. Ignore this");
-                return;
-            }
-                User activeUser = activeUserList.getSelectedValue();
-                cardLayout.show(chatPanel, activeUser.getName());
+                String activeUser = activeUserList.getSelectedValue();
+                userInfoLbl.setText(activeUser);
+                userInfoLbl.setFont(new Font("Verdana", Font.PLAIN, 25));
+                infoPanel.add(userInfoLbl);
+                JPanel currentPanel = listPanel.get(activeUser);
+                cardLayout.show(chatPanel, activeUser);
         });
-
     }
 
     /**
@@ -92,15 +69,10 @@ public class ChatGUI extends javax.swing.JFrame {
         activeUserList = new javax.swing.JList<>();
         infoPanel = new javax.swing.JPanel();
         chatPanel = new javax.swing.JPanel();
-        msgPanel = new javax.swing.JPanel();
-        fileBtn = new javax.swing.JButton();
-        sendBtn = new javax.swing.JButton();
-        msgJSP = new javax.swing.JScrollPane();
-        msgT = new javax.swing.JTextArea();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setPreferredSize(new java.awt.Dimension(1012, 800));
-
+        setPreferredSize(new java.awt.Dimension(1200, 770));
+        setResizable(false);
         activeInfoPanel.setBackground(new java.awt.Color(255, 255, 255));
 
         countLbl.setFont(new java.awt.Font("Tw Cen MT Condensed Extra Bold", 0, 14)); // NOI18N
@@ -158,7 +130,7 @@ public class ChatGUI extends javax.swing.JFrame {
         activePanelLayout.setVerticalGroup(
                 activePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, activePanelLayout.createSequentialGroup()
-                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addContainerGap(90, Short.MAX_VALUE)
                                 .addComponent(activeScroll, javax.swing.GroupLayout.PREFERRED_SIZE, 634, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addContainerGap())
                         .addGroup(activePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -168,48 +140,8 @@ public class ChatGUI extends javax.swing.JFrame {
         );
 
         infoPanel.setLayout(new java.awt.CardLayout());
+
         chatPanel.setLayout(new java.awt.CardLayout());
-
-        fileBtn.setText("FILE");
-        fileBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                fileBtnActionPerformed(evt);
-            }
-        });
-
-        sendBtn.setText("SEND");
-        sendBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                sendBtnActionPerformed(evt);
-            }
-        });
-
-        msgT.setColumns(20);
-        msgT.setRows(5);
-        msgJSP.setViewportView(msgT);
-
-        javax.swing.GroupLayout msgPanelLayout = new javax.swing.GroupLayout(msgPanel);
-        msgPanel.setLayout(msgPanelLayout);
-        msgPanelLayout.setHorizontalGroup(
-                msgPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(msgPanelLayout.createSequentialGroup()
-                                .addComponent(fileBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(msgJSP, javax.swing.GroupLayout.DEFAULT_SIZE, 528, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(sendBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE))
-        );
-        msgPanelLayout.setVerticalGroup(
-                msgPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, msgPanelLayout.createSequentialGroup()
-                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addGroup(msgPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                        .addComponent(sendBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGroup(msgPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                                .addComponent(msgJSP, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addComponent(fileBtn, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                .addGap(27, 27, 27))
-        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -218,160 +150,65 @@ public class ChatGUI extends javax.swing.JFrame {
                         .addGroup(layout.createSequentialGroup()
                                 .addComponent(activePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                        .addComponent(infoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(chatPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(msgPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(infoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 919, Short.MAX_VALUE)
+                                        .addComponent(chatPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addContainerGap())
         );
         layout.setVerticalGroup(
                 layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(layout.createSequentialGroup()
                                 .addContainerGap()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                        .addComponent(activePanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                         .addGroup(layout.createSequentialGroup()
-                                                .addComponent(infoPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(activePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGap(0, 0, Short.MAX_VALUE))
+                                        .addGroup(layout.createSequentialGroup()
+                                                .addComponent(infoPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(chatPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 556, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(msgPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 77, Short.MAX_VALUE)
+                                                .addComponent(chatPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                 .addContainerGap())))
         );
 
         pack();
     }// </editor-fold>
 
-    private void fileBtnActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO add your handling code here:
-        JFileChooser fileChooser = new JFileChooser();
-//        FileNameExtensionFilter fileFilter= new FileNameExtensionFilter("fileName", "docx","jpg","png","pdf","xlsx");
-//        fileChooser.setFileFilter(fileFilter);
-        fileChooser.setMultiSelectionEnabled(false);
-
-        int x = fileChooser.showDialog(this, "Choose file");
-        if (x == JFileChooser.APPROVE_OPTION) {
-            File f = fileChooser.getSelectedFile();
-            msgT.setText(f.getAbsolutePath());
-        }
-
-
-    }
-
-    private void sendBtnActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO add your handling code here:
-        String yourMsg= msgT.getText();
-        JPanel textPanel = formatLabel(yourMsg);
-        this.currentChatPanel.setLayout(new BorderLayout());
-        JPanel right = new JPanel(new BorderLayout());
-        right.add(textPanel, BorderLayout.LINE_END);
-        box.add(right);
-        box.add(Box.createVerticalStrut(15));
-        currentChatPanel.add(box, BorderLayout.PAGE_START);
-    }
-    private JScrollPane initChatPanel(String username){
-        JScrollPane scrollPane = new JScrollPane();
-        JPanel chatPanel = new JPanel();
-        scrollPane.setViewportView(chatPanel);
-        chatPanel.setName(username);
-        return scrollPane;
-    }
-    private JPanel formatLabel(String text){
-        JPanel j3 = new JPanel();
-        j3.setLayout(new BoxLayout(j3, BoxLayout.Y_AXIS));
-        JLabel l3 = new JLabel("<html><p style = \"width : 150px\">"+text+"</p></html>");
-        System.out.println(l3);
-        l3.setFont(new Font("Tahoma", Font.PLAIN, 16));
-        l3.setBackground(new Color(37, 211, 102));
-        l3.setOpaque(true);
-        l3.setBorder(new EmptyBorder(15,15,15,50));
-        Calendar cal = Calendar.getInstance();
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
-        JLabel l2 = new JLabel();
-        l2.setText(sdf.format(cal.getTime()));
-        j3.add(l2);
-        j3.add(l3);
-        return j3;
-    }
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        FlatArcOrangeIJTheme.setup();
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Flatlaf Light".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel( new FlatArcOrangeIJTheme() );
-                    break;
-                }
+    public void updateList(List<String> activeList) {
+        for(String user: activeList){
+            if(model.contains(user)){
+                continue;
+            }else{
+                model.addElement(user);
+                ChatPanel newPanel = new ChatPanel(user, this.clientCore);
+                listPanel.put(user, newPanel);
+                chatPanel.add(user, newPanel);
             }
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(ServerGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new ChatGUI().setVisible(true);
-            }
-        });
-    }
-
-    private static class JLable extends JLabel {
-
-        public JLable() {
         }
     }
 
-    public static class User {
 
-        String name;
-        String message;
-
-        public User(String name, String message) {
-
-            this.name = name;
-            this.message = message;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setMessage(String message) {
-            this.message = message;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public String toString() {
-            return name;
-        }
-
-    }
 
     // Variables declaration - do not modify
     private javax.swing.JPanel activeInfoPanel;
     private javax.swing.JPanel activePanel;
     private javax.swing.JScrollPane activeScroll;
-    private javax.swing.JList<User> activeUserList;
+    private javax.swing.JList<String> activeUserList;
     private javax.swing.JLabel activeUsersLbl;
     private javax.swing.JPanel chatPanel;
     private javax.swing.JLabel countLbl;
-    private javax.swing.JButton fileBtn;
     private javax.swing.JPanel infoPanel;
     private javax.swing.JScrollPane msgJSP;
-    private javax.swing.JPanel msgPanel;
-    private javax.swing.JTextArea msgT;
-    private javax.swing.JButton sendBtn;
+
+    public void updateMsg(Message message) {
+        String sender = message.getSender();
+        ChatPanel senderPanel = (ChatPanel) listPanel.get(sender);
+        System.out.println(listPanel.keySet());
+        System.out.println();
+        System.out.println(senderPanel.getName());
+        senderPanel.appendNewMsg(message.getContent());
+    }
+
+
     // End of variables declaration
 }
 

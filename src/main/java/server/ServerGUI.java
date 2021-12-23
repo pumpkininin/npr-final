@@ -237,19 +237,7 @@ public class ServerGUI extends javax.swing.JFrame {
         UIManager.put( "ScrollBar.trackInsets", new Insets( 2, 4, 2, 4 ) );
         UIManager.put( "ScrollBar.thumbInsets", new Insets( 2, 2, 2, 2 ) );
         UIManager.put( "ScrollBar.track", new Color( 0xe0e0e0 ) );
-//        FlatMaterialDesignDarkIJTheme.setup();
-//        try {
-//            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-//                if ("Flatlaf Light".equals(info.getName())) {
-//
-//                    javax.swing.UIManager.setLookAndFeel( new FlatArcIJTheme() );
-//                    break;
-//                }
-//            }
-//        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-//            java.util.logging.Logger.getLogger(ServerGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-//        }
-        //</editor-fold>
+
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {

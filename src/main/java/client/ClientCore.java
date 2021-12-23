@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class ClientCore{
     private String clientName;
@@ -16,15 +18,17 @@ public class ClientCore{
     private ObjectInputStream ois;
     private FileInputStream fileInputStream;
     private int port;
+    private List<String> active;
     private LoginGUI loginFrame;
+    private ChatGUI chatGUI;
     public ClientCore(LoginGUI jFrame){
         this.loginFrame = jFrame;
     }
     public void startClient() throws IOException {
         this.clientSocket = new Socket("localhost", 9999);
-
         this.oos = new ObjectOutputStream(clientSocket.getOutputStream());
         this.ois = new ObjectInputStream(clientSocket.getInputStream());
+        this.chatGUI = new ChatGUI(this,active);
         listenResponse();
     }
     public void register(String username,String password) throws IOException {
@@ -36,6 +40,9 @@ public class ClientCore{
         loginMsg.setReceiverType(Message.ReceiverType.GROUP);
         oos.writeObject(loginMsg);
         oos.flush();
+    }
+    public String getClientName(){
+        return clientName;
     }
     public void sendMessage(Message message) throws IOException {
         switch (message.getMessageType()){
@@ -55,6 +62,7 @@ public class ClientCore{
 
     }
     public void login(String username, String password) throws IOException {
+        this.clientName = username;
         Message message = new Message();
         message.setSender(username);
         message.setContent(password);
@@ -66,9 +74,8 @@ public class ClientCore{
     private void listenResponse(){
         Runnable runnable = () -> {
             try {
-                while(clientSocket.isConnected()){
+                while(true){
                     Message message = (Message) ois.readObject();
-                    System.out.println(message.getActiveList());
                     if(message != null){
                         switch (message.getMessageType()){
                             case DUPLICATED_USER:
@@ -76,18 +83,23 @@ public class ClientCore{
                                 break;
                             case MSG:
                                 System.out.printf("message from %s to you with content: %s", message.getSender(), message.getContent());
+                                chatGUI.updateMsg(message);
                                 break;
                             case UPDATE_LIST:
+                                active = message.getActiveList().stream().filter(user -> !user.equals(this.clientName)).collect(Collectors.toList());
+                                chatGUI.updateList(active);
                                 break;
                             case REGISTER_SUCCESS:
                                 this.loginFrame.notifySuccess();
                                 break;
                             case LOGIN_SUCCESS:
                                 this.loginFrame.setVisible(false);
-                                System.out.println(message.getActiveList());
-                                ChatGUI chatGUI = new ChatGUI(this, message.getActiveList());
+                                active = message.getActiveList().stream().filter(user -> !user.equals(this.clientName)).collect(Collectors.toList());
+                                chatGUI.setVisible(true);
+                                chatGUI.updateList(active);
                                 break;
-
+                            default:
+                                break;
                         }
                     }
                 }

@@ -143,13 +143,10 @@ public class LoginGUI extends javax.swing.JFrame {
     private void register(String username, String password) throws IOException {
         this.clientCore.register(username, password);
     }
-    private void login(String username, String password) throws IOException {
-        this.clientCore.login(username, password);
-    }
     public void notifySuccess() throws IOException {
         int input = JOptionPane.showConfirmDialog(null, "Register successfully, Now you can login with this account","Success", JOptionPane.DEFAULT_OPTION);
         if(input == 0){
-            login(usernameTf.getText(), passTf.getText());
+            this.clientCore.login(usernameTf.getText(), passTf.getText());
         }
     }
     public void notifyDuplicate(){

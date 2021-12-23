@@ -95,7 +95,7 @@ public class ServerCore{
             ObjectOutputStream receiverOs = clientOs.get(msg.getReceiver());
             receiverOs.writeObject(msg);
             receiverOs.flush();
-            receiverOs.close();
+            receiverOs.reset();
         }
 
         private void notifyDuplicate(ObjectOutputStream oos) throws IOException {
@@ -152,6 +152,7 @@ public class ServerCore{
                 response.setActiveList(new ArrayList<>(activeSet));
                 oos.writeObject(response);
                 oos.flush();
+                notifyToAllUsers(msg.getSender());
             }else{
                 response.setMessageType(Message.MessageType.WRONG_USERNAME_PASSWORD);
                 oos.writeObject(response);
