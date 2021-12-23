@@ -7,14 +7,15 @@ package client;/*
 import com.formdev.flatlaf.intellijthemes.FlatArcOrangeIJTheme;
 import server.ServerGUI;
 
-import java.awt.CardLayout;
-import java.awt.Component;
-import java.awt.Font;
+import java.awt.*;
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 
 /**
  *
@@ -22,45 +23,45 @@ import javax.swing.*;
  */
 public class ChatGUI extends javax.swing.JFrame {
 
-    DefaultListModel<String> model = new DefaultListModel<>();
+    DefaultListModel<User> model = new DefaultListModel<>();
     JPanel chatContentPanel = new JPanel();
     JLabel receivedMessLbl = new JLable();
     JLabel yourMsgLbl = new JLable();
     JPanel userInfoPanel = new JPanel();
     JLabel userInfoLbl = new JLable();
     CardLayout cardLayout;
+    private JPanel currentChatPanel;
+    private Box box =  Box.createVerticalBox();
     public String CHAT_CONTENT_PANEL = "chat content panel";
 
     /**
      * Creates new form ChatGUI
      */
-    public ChatGUI(ClientCore clientCore, List<String> activeList) {
+    public ChatGUI() {
         initComponents();
-        FlatArcOrangeIJTheme.setup();
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Flatlaf Light".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel( new FlatArcOrangeIJTheme() );
-                    break;
-                }
-            }
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(ServerGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
         activeUserList.setModel(model);
         activeUserList.setCellRenderer(new ListRender());
-        List<String> users = activeList;
+        List<User> users = new ArrayList<>();
+        users.add(new User("All", "heyyyy"));
+        users.add(new User("KhacHieu", "Hi! How are you?"));
+        users.add(new User("ThanhHuyen", "Xin chao"));
+        users.add(new User("ThanhTung", "Eiii"));
+        users.add(new User("User4", "Alooooo"));
+        users.add(new User("User5", "Aluuuuuuuuu"));
+        users.add(new User("user 6","asssss"));
+        users.add(new User("user 6","asssss"));
+        users.add(new User("user 6","asssss"));
         cardLayout = (CardLayout) chatPanel.getLayout();
-        HashMap<String, JPanel> listPanel = new HashMap<>();
-        for(String u : users){
+        HashMap<String, JScrollPane> listPanel = new HashMap<>();
+        for(User u : users){
             model.addElement(u);
-            JPanel newPanel = new JPanel();
+            JScrollPane newPanel = initChatPanel(u.getName());
             JLabel newLabel = new JLabel();
-            newLabel.setText(u);
+            newLabel.setText(u.getName());
             newPanel.add(newLabel);
-            newPanel.setName(u);
-            listPanel.put(u, newPanel);
-            chatPanel.add(u, newPanel);
+            newPanel.setName(u.getName());
+            listPanel.put(u.getName(), newPanel);
+            chatPanel.add(u.getName(), newPanel);
         }
         activeUserList.getSelectionModel().addListSelectionListener(e ->  {
             if (e.getValueIsAdjusting())
@@ -68,17 +69,10 @@ public class ChatGUI extends javax.swing.JFrame {
                 //System.out.println("Adjusting. Ignore this");
                 return;
             }
-                String activeUser = activeUserList.getSelectedValue();
-//                userInfoLbl.setText(activeUser.getName());
-//                userInfoLbl.setFont(new Font("Verdana", Font.PLAIN, 25));
-//                infoPanel.add(userInfoLbl);
-//                receivedMessLbl.setText(activeUser.getName() + ": " + activeUser.getMessage());
-//                receivedMessLbl.setFont(new Font("Verdana", Font.PLAIN, 15));
-                JPanel currentPanel = listPanel.get(activeUser);
-                CHAT_CONTENT_PANEL = activeUser;
-                cardLayout.show(chatPanel, activeUser);
+                User activeUser = activeUserList.getSelectedValue();
+                cardLayout.show(chatPanel, activeUser.getName());
         });
-        setVisible(true);
+
     }
 
     /**
@@ -267,19 +261,62 @@ public class ChatGUI extends javax.swing.JFrame {
     private void sendBtnActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO add your handling code here:
         String yourMsg= msgT.getText();
-//        System.out.println(yourMsg);
-        yourMsgLbl.setText(yourMsg);
-        yourMsgLbl.setFont(new Font("Verdana", Font.PLAIN, 15));
-        JPanel card = null;
-//        ((JPanel) chatPanel.getComponent(1)).add(yourMsgLbl);
-        for(Component p : chatPanel.getComponents()){
-            if(p.getName() == CHAT_CONTENT_PANEL){
-                ((JPanel) p).add(yourMsgLbl);
-            }
-        }
-
+        JPanel textPanel = formatLabel(yourMsg);
+        this.currentChatPanel.setLayout(new BorderLayout());
+        JPanel right = new JPanel(new BorderLayout());
+        right.add(textPanel, BorderLayout.LINE_END);
+        box.add(right);
+        box.add(Box.createVerticalStrut(15));
+        currentChatPanel.add(box, BorderLayout.PAGE_START);
     }
+    private JScrollPane initChatPanel(String username){
+        JScrollPane scrollPane = new JScrollPane();
+        JPanel chatPanel = new JPanel();
+        scrollPane.setViewportView(chatPanel);
+        chatPanel.setName(username);
+        return scrollPane;
+    }
+    private JPanel formatLabel(String text){
+        JPanel j3 = new JPanel();
+        j3.setLayout(new BoxLayout(j3, BoxLayout.Y_AXIS));
+        JLabel l3 = new JLabel("<html><p style = \"width : 150px\">"+text+"</p></html>");
+        System.out.println(l3);
+        l3.setFont(new Font("Tahoma", Font.PLAIN, 16));
+        l3.setBackground(new Color(37, 211, 102));
+        l3.setOpaque(true);
+        l3.setBorder(new EmptyBorder(15,15,15,50));
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+        JLabel l2 = new JLabel();
+        l2.setText(sdf.format(cal.getTime()));
+        j3.add(l2);
+        j3.add(l3);
+        return j3;
+    }
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        FlatArcOrangeIJTheme.setup();
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Flatlaf Light".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel( new FlatArcOrangeIJTheme() );
+                    break;
+                }
+            }
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(ServerGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
 
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new ChatGUI().setVisible(true);
+            }
+        });
+    }
 
     private static class JLable extends JLabel {
 
@@ -325,7 +362,7 @@ public class ChatGUI extends javax.swing.JFrame {
     private javax.swing.JPanel activeInfoPanel;
     private javax.swing.JPanel activePanel;
     private javax.swing.JScrollPane activeScroll;
-    private javax.swing.JList<String> activeUserList;
+    private javax.swing.JList<User> activeUserList;
     private javax.swing.JLabel activeUsersLbl;
     private javax.swing.JPanel chatPanel;
     private javax.swing.JLabel countLbl;
