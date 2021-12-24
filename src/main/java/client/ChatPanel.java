@@ -265,6 +265,9 @@ public class ChatPanel extends javax.swing.JPanel {
 
         return p3;
     }
+    public JButton getSendBtn(){
+        return msgBtn;
+    }
 
     // Variables declaration - do not modify
     private javax.swing.JPanel chatPnl;

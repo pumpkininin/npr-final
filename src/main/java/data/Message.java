@@ -83,7 +83,7 @@ public class Message implements Serializable {
     public enum MessageType{
         LOGIN, REGISTER, LOGOUT, MSG, UPDATE_LIST, DUPLICATED_USER,
         FILE, WRONG_USERNAME_PASSWORD, REGISTER_SUCCESS,
-        LOGIN_SUCCESS
+        LOGIN_SUCCESS, STOP_SERVER
     }
     public enum ReceiverType{
         PERSON, GROUP

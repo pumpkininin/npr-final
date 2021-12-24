@@ -3,12 +3,12 @@ package client;
 import data.FileObject;
 import data.Message;
 
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 import javax.swing.*;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -16,8 +16,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ClientCore{
+    private static final String TRUST_STORE_PATH = "SSLStore";
+    private static final String TRUST_STORE_PW = "nprfinal";
     private String clientName;
-    private Socket clientSocket;
+    private SSLSocket clientSocket;
     private ObjectOutputStream oos;
     private ObjectInputStream ois;
     private FileInputStream fileInputStream;
@@ -29,10 +31,17 @@ public class ClientCore{
     public ClientCore(LoginGUI jFrame){
         this.loginFrame = jFrame;
     }
+    static {
+        System.setProperty("javax.net.ssl.trustStore", TRUST_STORE_PATH);
+        System.setProperty("javax.net.ssl.trustStorePassword", TRUST_STORE_PW);
+    }
     public void startClient() throws IOException {
-        this.clientSocket = new Socket("localhost", 9999);
+        SSLSocketFactory socketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+        // create SSLSocket from factory
+        clientSocket = (SSLSocket) socketFactory.createSocket("127.0.0.1", 9999);
         this.oos = new ObjectOutputStream(clientSocket.getOutputStream());
         this.ois = new ObjectInputStream(clientSocket.getInputStream());
+        System.out.println(oos);
         this.chatGUI = new ChatGUI(this,active);
         listenResponse();
     }
@@ -50,7 +59,7 @@ public class ClientCore{
         return clientName;
     }
     public void sendMessage(Message message) throws IOException {
-        if(message.getMessageType()== Message.MessageType.FILE){
+        if(message.getMessageType() == Message.MessageType.FILE){
             this.fileObjects.put(message.getFileId(),new FileObject(message.getFileId(), message.getContent(), message.getFileData()));
         }
          oos.writeObject(message);
@@ -70,20 +79,20 @@ public class ClientCore{
     private void listenResponse(){
         Runnable runnable = () -> {
             try {
-                while(true){
+                while (clientSocket.isConnected()) {
                     Message message = (Message) ois.readObject();
-                    if(message != null){
-                        switch (message.getMessageType()){
+                    if (message != null) {
+                        switch (message.getMessageType()) {
                             case DUPLICATED_USER:
                                 this.loginFrame.notifyDuplicate();
                                 break;
                             case MSG:
-                                System.out.printf("message from %s to you with content: %s", message.getSender(), message.getContent());
                                 chatGUI.updateMsg(message);
                                 break;
                             case UPDATE_LIST:
                                 active = message.getActiveList().stream().filter(user -> !user.equals(this.clientName)).collect(Collectors.toList());
-                                chatGUI.updateList(active);
+                                System.out.println("list:" + active);
+                                chatGUI.updateList(active, message.getContent());
                                 break;
                             case REGISTER_SUCCESS:
                                 this.loginFrame.registerSuccess();
@@ -93,12 +102,12 @@ public class ClientCore{
                                 active = message.getActiveList().stream().filter(user -> !user.equals(this.clientName)).collect(Collectors.toList());
                                 chatGUI.setName(this.clientName);
                                 chatGUI.setVisible(true);
-                                chatGUI.updateList(active);
+                                chatGUI.initList(active);
                                 break;
                             case FILE:
                                 String fileName = message.getContent();
                                 byte[] fileData = message.getFileData();
-                                String fileId =message.getFileId();
+                                String fileId = message.getFileId();
                                 FileObject fileObject = new FileObject(fileId, fileName, fileData);
                                 fileObjects.put(fileId, fileObject);
                                 chatGUI.updateMsg(message);
@@ -107,6 +116,8 @@ public class ClientCore{
                         }
                     }
                 }
+            }catch (EOFException e){
+
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
@@ -128,7 +139,5 @@ public class ClientCore{
         newMsg.setReceiverType(Message.ReceiverType.GROUP);
         oos.writeObject(newMsg);
         oos.flush();
-        oos.close();
-        clientSocket.close();
     }
 }

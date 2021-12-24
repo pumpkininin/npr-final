@@ -2,44 +2,63 @@ package server;
 
 import data.Message;
 
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
 import javax.swing.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
+import java.security.Security;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
+import java.security.Provider;
 public class ServerCore{
+    private static final String KEY_STORE_PATH = "SSLStore";
+    private static final String KEY_STORE_PW = "nprfinal";
     private HashMap<String, ObjectOutputStream> clientOs;
     private HashMap<String, String> accountSet;
     private HashSet<String> activeSet;
-    private ServerSocket serverSocket;
-    private JLabel lbSeverStatus;
+    private SSLServerSocket serverSocket;
     private int port;
-    private ExecutorService executorService = Executors.newCachedThreadPool();;//thread pool
     private JTextArea console;
-    public ServerCore(int port, JTextArea jTextArea) throws IOException {
+    private DefaultListModel model;
+    public ServerCore(int port, JTextArea jTextArea, DefaultListModel model) throws IOException {
         this.port = port;
+        this.model = model;
         this.console = jTextArea;
         clientOs = new HashMap<>();
         accountSet = new HashMap<>();
         activeSet = new HashSet<>();
 
     }
+    static {
+        System.setProperty("javax.net.ssl.keyStore", KEY_STORE_PATH);
+        System.setProperty("javax.net.ssl.keyStorePassword", KEY_STORE_PW);
+    }
     public void startServer() throws IOException {
-        this.serverSocket = new ServerSocket(port);
+        // SSLServerSocketFactory for building SSLServerSockets
+        SSLServerSocketFactory socketFactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+        // create SSLServerSocket on specified port
+        serverSocket = (SSLServerSocket) socketFactory.createServerSocket(this.port);
         console.append("running");
         console.append(" on port " + port +"\n");
         while (true){
             Socket socket = serverSocket.accept();
-            System.out.println(socket);
             ServerService serverService = new ServerService(socket);
             serverService.start();
         }
     }
+
+    public void stopServer() throws IOException {
+        Message newMsg = new Message();
+        newMsg.setMessageType(Message.MessageType.STOP_SERVER);
+        serverSocket.close();
+    }
+
     class ServerService extends Thread{
         private String clientName;
         private Socket clientSocket;
@@ -50,30 +69,28 @@ public class ServerCore{
         }
         @Override
         public void run() {
-            try{
+            try {
                 ois = new ObjectInputStream(clientSocket.getInputStream());
                 oos = new ObjectOutputStream(clientSocket.getOutputStream());
-                while(true){
+                while (!clientSocket.isClosed()) {
                     Message msg = (Message) ois.readObject();
-                    if(msg != null){
-                        switch (msg.getReceiverType()){
+                    if (msg != null) {
+                        switch (msg.getReceiverType()) {
                             case PERSON:
                                 transferMessage(msg);
                                 break;
                             case GROUP:
-                                if(msg.getMessageType() == Message.MessageType.REGISTER){
+                                if (msg.getMessageType() == Message.MessageType.REGISTER) {
                                     register(msg);
-                                    notifyToAllUsers(msg.getSender());
-                                }else if(msg.getMessageType() == Message.MessageType.LOGIN){
+                                } else if (msg.getMessageType() == Message.MessageType.LOGIN) {
                                     login(msg);
-                                    notifyToAllUsers(msg.getSender());
-                                }else if(msg.getMessageType() == Message.MessageType.LOGOUT){
+                                } else if (msg.getMessageType() == Message.MessageType.LOGOUT) {
                                     logout(msg);
                                     notifyToAllUsers(msg.getSender());
-                                }else if(msg.getMessageType() == Message.MessageType.MSG){
+                                } else if (msg.getMessageType() == Message.MessageType.MSG) {
                                     transferToAll(msg);
-                                }else if(msg.getMessageType() == Message.MessageType.LOGOUT){
-
+                                } else if (msg.getMessageType() == Message.MessageType.LOGOUT) {
+                                    logout(msg);
                                 }
                                 break;
                             default:
@@ -81,17 +98,20 @@ public class ServerCore{
                         }
                     }
                 }
+            }catch (SocketException e) {
+                try {
+                    clientSocket.close();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
         }
 
         private void transferToAll(Message msg) throws IOException {
-            System.out.println(msg.getSender());
             for(String key : clientOs.keySet()){
-                System.out.println("key: "+ key);
                 if(key.equals(msg.getSender())){
-                    System.out.println(key);
                     continue;
                 }else{
                     ObjectOutputStream os = clientOs.get(key);
@@ -119,15 +139,19 @@ public class ServerCore{
 
         private void notifyToAllUsers(String clientName) throws IOException {
             Message updateMsg = new Message();
-            updateMsg.setSender("SERVER");
             updateMsg.setActiveList(new ArrayList<>(activeSet));
             updateMsg.setMessageType(Message.MessageType.UPDATE_LIST);
             updateMsg.setContent(clientName);
             for(Map.Entry<String, ObjectOutputStream> set : clientOs.entrySet()){
-                updateMsg.setReceiver(set.getKey());
-                set.getValue().writeObject(updateMsg);
-                set.getValue().flush();
-                set.getValue().reset();
+                if(set.getKey().equals(clientName)){
+                    System.out.println("true");
+                    continue;
+                }else {
+                    updateMsg.setReceiver(set.getKey());
+                    set.getValue().writeObject(updateMsg);
+                    set.getValue().flush();
+                    set.getValue().reset();
+                }
             }
         }
         private void register(Message message) throws IOException {
@@ -143,10 +167,9 @@ public class ServerCore{
             }
             clientOs.put(message.getSender(), oos);
             accountSet.put(message.getSender(), message.getContent());
-            activeSet.add(message.getSender());
             console.append("New user: " + message.getSender() + " has been registered!\n");
+
             response.setMessageType(Message.MessageType.REGISTER_SUCCESS);
-            System.out.println(new ArrayList<>(activeSet));
             oos.writeObject(response);
             oos.flush();
             oos.reset();
@@ -154,12 +177,12 @@ public class ServerCore{
         }
         private void login(Message msg) throws IOException {
             Message response = new Message();
-            System.out.println("2. "+accountSet.get(msg.getSender()));
-            System.out.println("2. "+msg.getContent());
             if(accountSet.get(msg.getSender()).equals(msg.getContent())){
                 clientOs.put(msg.getSender(), oos);
                 activeSet.add(msg.getSender());
                 response.setMessageType(Message.MessageType.LOGIN_SUCCESS);
+                console.append(msg.getSender() + " has been login!\n");
+                model.addElement(msg.getSender());
                 response.setActiveList(new ArrayList<>(activeSet));
                 oos.writeObject(response);
                 oos.flush();
@@ -171,7 +194,9 @@ public class ServerCore{
             }
         }
         private void logout(Message msg) throws IOException {
-            Message response = new Message();
+            activeSet.remove(msg.getSender());
+            clientOs.remove(msg.getSender());
+            clientSocket.close();
             notifyToAllUsers(msg.getSender());
         }
     }

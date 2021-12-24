@@ -18,6 +18,7 @@ import java.io.IOException;
  */
 public class ServerGUI extends javax.swing.JFrame {
     private ServerCore serverCore;
+    DefaultListModel<String> model = new DefaultListModel<>();
     /**
      * Creates new form ServerGUI
      */
@@ -56,9 +57,9 @@ public class ServerGUI extends javax.swing.JFrame {
         JLabel iconLbl = new JLabel();
         logPanel.add(serverStatus);
         addrLbl.setText("Address");
-
+        addrTf.setText("localhost");
         portLbl.setText("Port");
-
+        portTf.setText("9999");
         addrTf.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addrTfActionPerformed(evt);
@@ -74,6 +75,13 @@ public class ServerGUI extends javax.swing.JFrame {
             }
         });
         stopBtn.setText("Stop");
+        stopBtn.addActionListener(e -> {
+            try {
+                stopBtnActionPerformed(e);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        });
         iconLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/hanu.png"))); // NOI18N
 
         javax.swing.GroupLayout logoPanelLayout = new javax.swing.GroupLayout(logoPanel);
@@ -151,11 +159,7 @@ public class ServerGUI extends javax.swing.JFrame {
                                 .addContainerGap())
         );
 
-        jList1.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public String getElementAt(int i) { return strings[i]; }
-        });
+        jList1.setModel(model);
         listScroll.setViewportView(jList1);
 
         javax.swing.GroupLayout listPanelLayout = new javax.swing.GroupLayout(listPanel);
@@ -201,11 +205,15 @@ public class ServerGUI extends javax.swing.JFrame {
         pack();
     }// </editor-fold>
 
+    private void stopBtnActionPerformed(ActionEvent e) throws IOException {
+        this.serverCore.stopServer();
+    }
+
     private void addrTfActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO add your handling code here:
     }
     private void startBtnActionPerformed(ActionEvent evt) throws IOException {
-        this.serverCore = new ServerCore(Integer.parseInt(portTf.getText()), consolePanel);
+        this.serverCore = new ServerCore(Integer.parseInt(portTf.getText()), consolePanel, model);
         Thread th  = new Thread() {
             @Override
             public void run() {

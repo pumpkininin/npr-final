@@ -24,7 +24,7 @@ import javax.swing.*;
  *
  * @author nkhieu
  */
-public class ChatGUI extends javax.swing.JFrame implements WindowListener {
+public class ChatGUI extends javax.swing.JFrame{
     private ClientCore clientCore;
     DefaultListModel<String> model = new DefaultListModel<>();
     HashMap<String, ChatPanel> listPanel = new HashMap<>();
@@ -79,11 +79,17 @@ public class ChatGUI extends javax.swing.JFrame implements WindowListener {
             @Override
             public void windowClosing(WindowEvent e) {
                 try {
-                    clientCore.logout();
+                    int x = JOptionPane.showConfirmDialog(null,
+                            "Logout?",
+                            "Login",JOptionPane.CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+                    if(x == 0){
+                        clientCore.logout();
+                        System.exit(1);
+                    }
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
-                System.exit(1);
+
             }
         });
         setPreferredSize(new java.awt.Dimension(1200, 650));
@@ -177,7 +183,7 @@ public class ChatGUI extends javax.swing.JFrame implements WindowListener {
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                         .addComponent(chatPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 713, Short.MAX_VALUE)
                                         .addGroup(layout.createSequentialGroup()
-                                                .addComponent(infoPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 618, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(infoPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 680, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                                 .addComponent(logoutBtn)
                                                 .addGap(0, 0, Short.MAX_VALUE)))
@@ -206,23 +212,45 @@ public class ChatGUI extends javax.swing.JFrame implements WindowListener {
     }// </editor-fold>
 
     private void logoutBtnActionPerformed(ActionEvent evt) throws IOException {
-        clientCore.logout();
-        System.exit(1);
-    }
 
-    public void updateList(List<String> activeList) {
-        for(String user: activeList){
-            if(model.contains(user)){
-                continue;
-            }else{
-                model.addElement(user);
-                ChatPanel newPanel = new ChatPanel(user, this.clientCore);
-                listPanel.put(user, newPanel);
-                chatPanel.add(user, newPanel);
-            }
+        int x = JOptionPane.showConfirmDialog(null,
+                "Logout?",
+                "Login",JOptionPane.CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if(x == 0){
+            clientCore.logout();
+            System.exit(1);
         }
     }
 
+    public void updateList(List<String> active, String user) {
+       if(model.contains(user)) {
+           JOptionPane.showConfirmDialog(this,
+                   user + "has been logout! The list of active user has been updated!Now you cannot chat with he/she, but all sent message still available for reading",
+                   "Error", JOptionPane.CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+           ChatPanel removePanel = listPanel.get(user);
+           removePanel.getSendBtn().setEnabled(false);
+       }else if(active.contains(user)){
+            model.addElement(user);
+            ChatPanel newPanel = new ChatPanel(user, this.clientCore);
+            JOptionPane.showConfirmDialog(this,
+                    user +"has been login! Now you can chat with he/she by click on corresponding name in list",
+                    "Login",JOptionPane.CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+            listPanel.put(user, newPanel);
+            chatPanel.add(user, newPanel);
+        }
+
+    }
+    public void initList(List<String> active) {
+        JOptionPane.showConfirmDialog(this,
+                "Welcome!",
+                "Welcome",JOptionPane.CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        for(String user: active){
+            model.addElement(user);
+            ChatPanel newPanel = new ChatPanel(user, this.clientCore);
+            listPanel.put(user, newPanel);
+            chatPanel.add(user, newPanel);
+            }
+    }
     public void updateMsg(Message message) {
         if(message.getMessageType() == Message.MessageType.FILE){
 
@@ -253,41 +281,7 @@ public class ChatGUI extends javax.swing.JFrame implements WindowListener {
     private javax.swing.JScrollPane msgJSP;
     private javax.swing.JButton logoutBtn;
 
-    @Override
-    public void windowOpened(WindowEvent e) {
 
-    }
-
-    @Override
-    public void windowClosing(WindowEvent e) {
-        System.out.println("Logout");
-        System.exit(1);
-    }
-
-    @Override
-    public void windowClosed(WindowEvent e) {
-
-    }
-
-    @Override
-    public void windowIconified(WindowEvent e) {
-
-    }
-
-    @Override
-    public void windowDeiconified(WindowEvent e) {
-
-    }
-
-    @Override
-    public void windowActivated(WindowEvent e) {
-
-    }
-
-    @Override
-    public void windowDeactivated(WindowEvent e) {
-
-    }
 
 
     // End of variables declaration

@@ -158,7 +158,6 @@ public class LoginGUI extends javax.swing.JFrame {
             this.clientCore.login(usernameTf.getText(), passTf.getText());
         }
     }
-    public void loginSuccess(){}
 
     public void notifyDuplicate(){
         int input = JOptionPane.showConfirmDialog(null, "Username has been duplicated! Choose an other one","Error",JOptionPane.CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
