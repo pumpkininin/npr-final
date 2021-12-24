@@ -9,7 +9,12 @@ import data.Message;
 import server.ServerGUI;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,7 +24,7 @@ import javax.swing.*;
  *
  * @author nkhieu
  */
-public class ChatGUI extends javax.swing.JFrame {
+public class ChatGUI extends javax.swing.JFrame implements WindowListener {
     private ClientCore clientCore;
     DefaultListModel<String> model = new DefaultListModel<>();
     HashMap<String, ChatPanel> listPanel = new HashMap<>();
@@ -68,9 +73,20 @@ public class ChatGUI extends javax.swing.JFrame {
         activeUserList = new javax.swing.JList<>();
         infoPanel = new javax.swing.JPanel();
         chatPanel = new javax.swing.JPanel();
-
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setPreferredSize(new java.awt.Dimension(1200, 770));
+        logoutBtn = new javax.swing.JButton();
+        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                try {
+                    clientCore.logout();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+                System.exit(1);
+            }
+        });
+        setPreferredSize(new java.awt.Dimension(1200, 650));
         setResizable(false);
         activeInfoPanel.setBackground(new java.awt.Color(255, 255, 255));
 
@@ -141,7 +157,16 @@ public class ChatGUI extends javax.swing.JFrame {
         infoPanel.setLayout(new java.awt.CardLayout());
 
         chatPanel.setLayout(new java.awt.CardLayout());
-
+        logoutBtn.setText("Logout");
+        logoutBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                try {
+                    logoutBtnActionPerformed(evt);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -150,8 +175,12 @@ public class ChatGUI extends javax.swing.JFrame {
                                 .addComponent(activePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(infoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 919, Short.MAX_VALUE)
-                                        .addComponent(chatPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                        .addComponent(chatPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 713, Short.MAX_VALUE)
+                                        .addGroup(layout.createSequentialGroup()
+                                                .addComponent(infoPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 618, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                                .addComponent(logoutBtn)
+                                                .addGap(0, 0, Short.MAX_VALUE)))
                                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -163,7 +192,11 @@ public class ChatGUI extends javax.swing.JFrame {
                                                 .addComponent(activePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                 .addGap(0, 0, Short.MAX_VALUE))
                                         .addGroup(layout.createSequentialGroup()
-                                                .addComponent(infoPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                        .addComponent(infoPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addGroup(layout.createSequentialGroup()
+                                                                .addGap(29, 29, 29)
+                                                                .addComponent(logoutBtn)))
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                 .addComponent(chatPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                 .addContainerGap())))
@@ -171,6 +204,11 @@ public class ChatGUI extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>
+
+    private void logoutBtnActionPerformed(ActionEvent evt) throws IOException {
+        clientCore.logout();
+        System.exit(1);
+    }
 
     public void updateList(List<String> activeList) {
         for(String user: activeList){
@@ -213,7 +251,43 @@ public class ChatGUI extends javax.swing.JFrame {
     private javax.swing.JLabel countLbl;
     private javax.swing.JPanel infoPanel;
     private javax.swing.JScrollPane msgJSP;
+    private javax.swing.JButton logoutBtn;
 
+    @Override
+    public void windowOpened(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowClosing(WindowEvent e) {
+        System.out.println("Logout");
+        System.exit(1);
+    }
+
+    @Override
+    public void windowClosed(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowIconified(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowDeiconified(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowActivated(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowDeactivated(WindowEvent e) {
+
+    }
 
 
     // End of variables declaration

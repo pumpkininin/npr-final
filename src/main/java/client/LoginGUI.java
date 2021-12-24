@@ -76,6 +76,15 @@ public class LoginGUI extends javax.swing.JFrame {
             }
         });
         loginBtn.setText("Login");
+        loginBtn.addActionListener(e -> {
+            String username = usernameTf.getText();
+            String password = passTf.getText();
+            try {
+                clientCore.login(username, password);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        });
         ImageIcon icon = new ImageIcon(getClass().getResource("/images/hanu.png"));
         logoLbl.setIcon(icon);
         logoPanel.add(logoLbl);
@@ -143,12 +152,14 @@ public class LoginGUI extends javax.swing.JFrame {
     private void register(String username, String password) throws IOException {
         this.clientCore.register(username, password);
     }
-    public void notifySuccess() throws IOException {
+    public void registerSuccess() throws IOException {
         int input = JOptionPane.showConfirmDialog(null, "Register successfully, Now you can login with this account","Success", JOptionPane.DEFAULT_OPTION);
         if(input == 0){
             this.clientCore.login(usernameTf.getText(), passTf.getText());
         }
     }
+    public void loginSuccess(){}
+
     public void notifyDuplicate(){
         int input = JOptionPane.showConfirmDialog(null, "Username has been duplicated! Choose an other one","Error",JOptionPane.CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
 

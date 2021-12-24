@@ -50,6 +50,9 @@ public class ClientCore{
         return clientName;
     }
     public void sendMessage(Message message) throws IOException {
+        if(message.getMessageType()== Message.MessageType.FILE){
+            this.fileObjects.put(message.getFileId(),new FileObject(message.getFileId(), message.getContent(), message.getFileData()));
+        }
          oos.writeObject(message);
          oos.flush();
 
@@ -83,7 +86,7 @@ public class ClientCore{
                                 chatGUI.updateList(active);
                                 break;
                             case REGISTER_SUCCESS:
-                                this.loginFrame.notifySuccess();
+                                this.loginFrame.registerSuccess();
                                 break;
                             case LOGIN_SUCCESS:
                                 this.loginFrame.setVisible(false);
@@ -116,5 +119,16 @@ public class ClientCore{
 
     public FileObject getStoredFile(String fileId) {
         return fileObjects.get(fileId);
+    }
+
+    public void logout() throws IOException {
+        Message newMsg = new Message();
+        newMsg.setSender(this.clientName);
+        newMsg.setMessageType(Message.MessageType.LOGOUT);
+        newMsg.setReceiverType(Message.ReceiverType.GROUP);
+        oos.writeObject(newMsg);
+        oos.flush();
+        oos.close();
+        clientSocket.close();
     }
 }

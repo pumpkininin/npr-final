@@ -72,6 +72,8 @@ public class ServerCore{
                                     notifyToAllUsers(msg.getSender());
                                 }else if(msg.getMessageType() == Message.MessageType.MSG){
                                     transferToAll(msg);
+                                }else if(msg.getMessageType() == Message.MessageType.LOGOUT){
+
                                 }
                                 break;
                             default:
