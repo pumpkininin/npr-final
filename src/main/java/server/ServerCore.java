@@ -8,6 +8,7 @@ import javax.swing.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
@@ -26,10 +27,12 @@ public class ServerCore{
     private int port;
     private JTextArea console;
     private DefaultListModel model;
-    public ServerCore(int port, JTextArea jTextArea, DefaultListModel model) throws IOException {
+    private ServerGUI serverGUI;
+    public ServerCore(int port, JTextArea jTextArea, DefaultListModel model, ServerGUI serverGUI) throws IOException {
         this.port = port;
         this.model = model;
         this.console = jTextArea;
+        this.serverGUI = serverGUI;
         clientOs = new HashMap<>();
         accountSet = new HashMap<>();
         activeSet = new HashSet<>();
@@ -40,17 +43,22 @@ public class ServerCore{
         System.setProperty("javax.net.ssl.keyStorePassword", KEY_STORE_PW);
     }
     public void startServer() throws IOException {
-        // SSLServerSocketFactory for building SSLServerSockets
-        SSLServerSocketFactory socketFactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
-        // create SSLServerSocket on specified port
-        serverSocket = (SSLServerSocket) socketFactory.createServerSocket(this.port);
-        console.append("running");
-        console.append(" on port " + port +"\n");
-        while (true){
-            Socket socket = serverSocket.accept();
-            ServerService serverService = new ServerService(socket);
-            serverService.start();
+        try{
+            // SSLServerSocketFactory for building SSLServerSockets
+            SSLServerSocketFactory socketFactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+            // create SSLServerSocket on specified port
+            serverSocket = (SSLServerSocket) socketFactory.createServerSocket(this.port);
+            console.append("running");
+            console.append(" on port " + port +"\n");
+            while (true){
+                Socket socket = serverSocket.accept();
+                ServerService serverService = new ServerService(socket);
+                serverService.start();
+            }
+        } catch (BindException e){
+            serverGUI.notifyBindingException(port);
         }
+
     }
 
     public void stopServer() throws IOException {

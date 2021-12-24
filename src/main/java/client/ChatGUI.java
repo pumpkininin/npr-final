@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 
 /**
  *
@@ -47,9 +48,11 @@ public class ChatGUI extends javax.swing.JFrame{
         ChatPanel newPanel = new ChatPanel("ALL", this.clientCore);
         listPanel.put("ALL", newPanel);
         chatPanel.add("ALL", newPanel);
+        infoPanel.add(userInfoLbl);
+        userInfoLbl.setFont(new java.awt.Font("Segoe UI Light", 1, 36));
         activeUserList.getSelectionModel().addListSelectionListener(e ->  {
                 String activeUser = activeUserList.getSelectedValue();
-                userInfoLbl.setText(activeUser);
+                userInfoLbl.setText(activeUser.equals("ALL") ? "Global" : activeUser);
                 userInfoLbl.setFont(new Font("Verdana", Font.PLAIN, 25));
                 infoPanel.add(userInfoLbl);
                 cardLayout.show(chatPanel, activeUser);
@@ -74,6 +77,12 @@ public class ChatGUI extends javax.swing.JFrame{
         infoPanel = new javax.swing.JPanel();
         chatPanel = new javax.swing.JPanel();
         logoutBtn = new javax.swing.JButton();
+        logoutBtn.setBorder(new EmptyBorder(10, 10, 10,10));
+        logoutBtn.setFont(new java.awt.Font("Segoe UI Light", 1, 20));
+        logoutBtn.setBackground(new JList<>().getSelectionBackground());
+        logoutBtn.setForeground(new JList<>().getSelectionForeground());
+        logoutBtn.setOpaque(true);
+        countLbl.setText(String.valueOf(model.getSize()));
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             @Override
@@ -238,7 +247,7 @@ public class ChatGUI extends javax.swing.JFrame{
             listPanel.put(user, newPanel);
             chatPanel.add(user, newPanel);
         }
-
+        countLbl.setText(String.valueOf(model.getSize()));
     }
     public void initList(List<String> active) {
         JOptionPane.showConfirmDialog(this,
@@ -250,6 +259,7 @@ public class ChatGUI extends javax.swing.JFrame{
             listPanel.put(user, newPanel);
             chatPanel.add(user, newPanel);
             }
+        countLbl.setText(String.valueOf(model.getSize()));
     }
     public void updateMsg(Message message) {
         if(message.getMessageType() == Message.MessageType.FILE){

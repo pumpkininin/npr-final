@@ -213,7 +213,7 @@ public class ServerGUI extends javax.swing.JFrame {
         // TODO add your handling code here:
     }
     private void startBtnActionPerformed(ActionEvent evt) throws IOException {
-        this.serverCore = new ServerCore(Integer.parseInt(portTf.getText()), consolePanel, model);
+        this.serverCore = new ServerCore(Integer.parseInt(portTf.getText()), consolePanel, model, this);
         Thread th  = new Thread() {
             @Override
             public void run() {
@@ -254,7 +254,11 @@ public class ServerGUI extends javax.swing.JFrame {
             }
         });
     }
-
+    public void notifyBindingException(int port) {
+       JOptionPane.showConfirmDialog(null,
+               String.format("Port %d already in used", port),
+               "Error",JOptionPane.CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
+    }
     // Variables declaration - do not modify
     private javax.swing.JLabel addrLbl;
     private javax.swing.JPanel addrPanel;
@@ -272,5 +276,7 @@ public class ServerGUI extends javax.swing.JFrame {
     private javax.swing.JPanel logoPanel;
     private javax.swing.JTextArea textArea;
     private javax.swing.JLabel serverStatus;
+
+
     // End of variables declaration
 }
