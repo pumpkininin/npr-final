@@ -7,13 +7,12 @@ package client;
 import data.FileObject;
 import data.Message;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -30,6 +29,7 @@ public class ChatPanel extends javax.swing.JPanel {
     private ClientCore clientCore;
     private boolean isSendingFile = false;
     private byte[] fileByte;
+    private String filePath;
     private Box vertical = Box.createVerticalBox();
     /**
      * Creates new form ChatPanelGUi
@@ -134,12 +134,13 @@ public class ChatPanel extends javax.swing.JPanel {
     }// </editor-fold>
 
 
-    private void fileBtnActionPerformed(java.awt.event.ActionEvent evt) {
+    private void fileBtnActionPerformed(java.awt.event.ActionEvent evt)  {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setMultiSelectionEnabled(false);
         int x = fileChooser.showDialog(this,"Choose file");
         if(x == JFileChooser.APPROVE_OPTION){
             File f = fileChooser.getSelectedFile();
+            this.filePath = f.getAbsolutePath();
             fileByte = transferFileToByteArray(f);
             isSendingFile = true;
             jTextArea1.setText(f.getName());
@@ -180,7 +181,19 @@ public class ChatPanel extends javax.swing.JPanel {
             newMsg.setFileId(new Date().getTime() + " " + msg.replace(" ", "-"));
             isSendingFile = false;
         }
-        JPanel p2 = formatLabel(newMsg, "");
+        System.out.println(filePath);
+        BufferedImage img = null;
+        try{
+            img = ImageIO.read(new File(filePath));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        JPanel p2 = new JPanel();
+        if(img != null){
+            p2 = formatImgLabel(newMsg, img);
+        }else{
+            p2 = formatLabel(newMsg, "");
+        }
         chatPnl.setLayout(new BorderLayout());
         JPanel right = new JPanel(new BorderLayout());
         right.add(p2, BorderLayout.LINE_END);
@@ -190,6 +203,55 @@ public class ChatPanel extends javax.swing.JPanel {
         clientCore.sendMessage(newMsg);
         jTextArea1.setText("");
         validate();
+    }
+
+    private JPanel formatImgLabel(Message msg, BufferedImage img) {
+        JPanel p3 = new JPanel();
+        p3.setLayout(new BoxLayout(p3, BoxLayout.Y_AXIS));
+        JLabel l1 = new JLabel();
+        l1.setBorder(new EmptyBorder(15,15,15,50));
+        l1.setIcon(new ImageIcon(img));
+        JPanel p4 = new JPanel();
+        p4.setLayout(new BoxLayout(p4, BoxLayout.Y_AXIS));
+        p4.setBackground(new JList<>().getSelectionBackground());
+        JButton downloadBtn = new JButton("Download!");
+        downloadBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                FileObject file = clientCore.getStoredFile(msg.getFileId());
+
+                JFrame parentFrame = new JFrame();
+
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setDialogTitle("Dowload file");
+                fileChooser.setSelectedFile(new File(file.getName()));
+
+                int userSelection = fileChooser.showSaveDialog(parentFrame);
+
+
+                if (userSelection == JFileChooser.APPROVE_OPTION) {
+                    File fileToSave = fileChooser.getSelectedFile();
+                    try {
+                        FileOutputStream fileOutputStream = new FileOutputStream(fileToSave);
+                        fileOutputStream.write(file.getContent());
+                        fileOutputStream.close();
+                        JOptionPane.showConfirmDialog(null,
+                                "Download successful", "Message", JOptionPane.DEFAULT_OPTION);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        p4.add(l1);
+        p4.add(downloadBtn);
+        JLabel l2 = new JLabel();
+        l2.setFont(new Font("Tahoma", Font.PLAIN, 14));
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+        p3.add(l2);
+        p3.add(p4);
+        return p3;
+
     }
 
     public void appendNewMsg(Message msg, String sender){
@@ -202,9 +264,6 @@ public class ChatPanel extends javax.swing.JPanel {
         validate();
     }
 
-    private JPanel formatLabelFile() {
-        return new JPanel();
-    }
     private JPanel formatLabel(Message msg, String sender){
         JPanel p3 = new JPanel();
         p3.setLayout(new BoxLayout(p3, BoxLayout.Y_AXIS));

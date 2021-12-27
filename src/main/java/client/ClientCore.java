@@ -38,7 +38,7 @@ public class ClientCore{
     public void startClient() throws IOException {
         SSLSocketFactory socketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
         // create SSLSocket from factory
-        clientSocket = (SSLSocket) socketFactory.createSocket("127.0.0.1", 9999);
+        clientSocket = (SSLSocket) socketFactory.createSocket("127.0.0.1", 9988);
         this.oos = new ObjectOutputStream(clientSocket.getOutputStream());
         this.ois = new ObjectInputStream(clientSocket.getInputStream());
         System.out.println(oos);
