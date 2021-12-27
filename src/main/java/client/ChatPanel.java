@@ -61,7 +61,8 @@ public class ChatPanel extends javax.swing.JPanel {
 
         chatPnl.setLayout(new java.awt.BorderLayout());
         jScrollPane3.setViewportView(chatPnl);
-
+        jScrollPane3.getVerticalScrollBar().setUnitIncrement(16);
+        jScrollPane2.getVerticalScrollBar().setUnitIncrement(16);
         fileBtn.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
         fileBtn.setText("File");
         fileBtn.addActionListener(new java.awt.event.ActionListener() {
@@ -209,7 +210,7 @@ public class ChatPanel extends javax.swing.JPanel {
         JPanel p3 = new JPanel();
         p3.setLayout(new BoxLayout(p3, BoxLayout.Y_AXIS));
         JLabel l1 = new JLabel();
-        l1.setBorder(new EmptyBorder(15,15,15,50));
+        l1.setBorder(new EmptyBorder(15,15,15,15));
         l1.setIcon(new ImageIcon(img));
         JPanel p4 = new JPanel();
         p4.setLayout(new BoxLayout(p4, BoxLayout.Y_AXIS));
