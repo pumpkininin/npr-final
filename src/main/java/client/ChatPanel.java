@@ -178,6 +178,7 @@ public class ChatPanel extends javax.swing.JPanel {
             newMsg.setMessageType(Message.MessageType.FILE);
             newMsg.setFileData(fileByte);
             newMsg.setFileId(new Date().getTime() + " " + msg.replace(" ", "-"));
+             fileByte = null;
             isSendingFile = false;
         }
         JPanel p2 = formatLabel(newMsg, "");
@@ -205,7 +206,7 @@ public class ChatPanel extends javax.swing.JPanel {
     private JPanel formatLabelFile() {
         return new JPanel();
     }
-    private JPanel formatLabel(Message msg, String sender){
+    private JPanel formatLabel(Message msg, String sender){//tạo ra label tin nhắn
         JPanel p3 = new JPanel();
         p3.setLayout(new BoxLayout(p3, BoxLayout.Y_AXIS));
         JLabel l1 = new JLabel("<html><p style = \"width : 150px\">"+msg.getContent()+"</p></html>");

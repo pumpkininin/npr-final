@@ -27,7 +27,7 @@ public class ClientCore{
     private List<String> active;
     private LoginGUI loginFrame;
     private ChatGUI chatGUI;
-    private HashMap<String, FileObject> fileObjects = new HashMap<>();
+    private HashMap<String, FileObject> fileObjects = new HashMap<>();//chứa những file đã gửi và nhận
     public ClientCore(LoginGUI jFrame){
         this.loginFrame = jFrame;
     }
@@ -48,11 +48,11 @@ public class ClientCore{
     public void register(String username,String password) throws IOException {
         this.clientName = username;
         Message loginMsg = new Message();
-        loginMsg.setSender(clientName);
-        loginMsg.setContent(password);
+        loginMsg.setSender(clientName);//set username
+        loginMsg.setContent(password);//set password
         loginMsg.setMessageType(Message.MessageType.REGISTER);
         loginMsg.setReceiverType(Message.ReceiverType.GROUP);
-        oos.writeObject(loginMsg);
+        oos.writeObject(loginMsg);//gửi đi cho server
         oos.flush();
     }
     public String getClientName(){
@@ -86,8 +86,8 @@ public class ClientCore{
                             case DUPLICATED_USER:
                                 this.loginFrame.notifyDuplicate();
                                 break;
-                            case MSG:
-                                chatGUI.updateMsg(message);
+                            case MSG://tin nhắn thông thường
+                                chatGUI.updateMsg(message);//hiện thị tin nhắn
                                 break;
                             case UPDATE_LIST:
                                 active = message.getActiveList().stream().filter(user -> !user.equals(this.clientName)).collect(Collectors.toList());
@@ -98,18 +98,18 @@ public class ClientCore{
                                 this.loginFrame.registerSuccess();
                                 break;
                             case LOGIN_SUCCESS:
-                                this.loginFrame.setVisible(false);
-                                active = message.getActiveList().stream().filter(user -> !user.equals(this.clientName)).collect(Collectors.toList());
+                                this.loginFrame.setVisible(false);//ẩn cửa sổ login
+                                active = message.getActiveList().stream().filter(user -> !user.equals(this.clientName)).collect(Collectors.toList());//loại chính tên người dùng ra khỏi list
                                 chatGUI.setName(this.clientName);
-                                chatGUI.setVisible(true);
-                                chatGUI.initList(active);
+                                chatGUI.setVisible(true);//hiện thị chatGUI
+                                chatGUI.initList(active);//khởi tạo danh sách list người dùng
                                 break;
-                            case FILE:
-                                String fileName = message.getContent();
-                                byte[] fileData = message.getFileData();
+                            case FILE://gửi nhận file
+                                String fileName = message.getContent();//lấy filename
+                                byte[] fileData = message.getFileData();//lấy file content
                                 String fileId = message.getFileId();
                                 FileObject fileObject = new FileObject(fileId, fileName, fileData);
-                                fileObjects.put(fileId, fileObject);
+                                fileObjects.put(fileId, fileObject);//lưu file vào fileObjects
                                 chatGUI.updateMsg(message);
                             default:
                                 break;

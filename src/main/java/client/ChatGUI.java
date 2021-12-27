@@ -28,7 +28,7 @@ import javax.swing.border.EmptyBorder;
 public class ChatGUI extends javax.swing.JFrame{
     private ClientCore clientCore;
     DefaultListModel<String> model = new DefaultListModel<>();
-    HashMap<String, ChatPanel> listPanel = new HashMap<>();
+    HashMap<String, ChatPanel> listPanel = new HashMap<>();//danh sách chứa các chat panel
     JPanel chatContentPanel = new JPanel();
     JPanel userInfoPanel = new JPanel();
     JLabel userInfoLbl = new JLabel();
@@ -41,7 +41,7 @@ public class ChatGUI extends javax.swing.JFrame{
         this.clientCore = clientCore;
         initComponents();
         FlatArcOrangeIJTheme.setup();
-        activeUserList.setModel(model);
+        activeUserList.setModel(model);//
         activeUserList.setCellRenderer(new ListRender());
         cardLayout = (CardLayout) chatPanel.getLayout();
         model.addElement("ALL");
@@ -253,9 +253,9 @@ public class ChatGUI extends javax.swing.JFrame{
         JOptionPane.showConfirmDialog(this,
                 "Welcome!",
                 "Welcome",JOptionPane.CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-        for(String user: active){
+        for(String user: active){//vòng lặp for
             model.addElement(user);
-            ChatPanel newPanel = new ChatPanel(user, this.clientCore);
+            ChatPanel newPanel = new ChatPanel(user, this.clientCore);//tạo ra cửa sổ chat với các user tương ứng
             listPanel.put(user, newPanel);
             chatPanel.add(user, newPanel);
             }
@@ -269,11 +269,11 @@ public class ChatGUI extends javax.swing.JFrame{
         }
         String sender = message.getSender();
         if(message.getReceiverType() == Message.ReceiverType.GROUP){
-            ChatPanel allPanel = listPanel.get("ALL");
+            ChatPanel allPanel = listPanel.get("ALL");//lấy ra chat panel của global
             allPanel.appendNewMsg(message, sender);
             return;
         }
-        ChatPanel senderPanel = listPanel.get(sender);
+        ChatPanel senderPanel = listPanel.get(sender);//lấy ra chat panel của người gửi tương ứng
         senderPanel.appendNewMsg(message, "");
 
     }

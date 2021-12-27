@@ -20,9 +20,9 @@ import java.security.Provider;
 public class ServerCore{
     private static final String KEY_STORE_PATH = "SSLStore";
     private static final String KEY_STORE_PW = "nprfinal";
-    private HashMap<String, ObjectOutputStream> clientOs;
-    private HashMap<String, String> accountSet;
-    private HashSet<String> activeSet;
+    private HashMap<String, ObjectOutputStream> clientOs;//hashmap chứa tên người dùng và outputstream tương ứng
+    private HashMap<String, String> accountSet;//hashmap chứa username và password
+    private HashSet<String> activeSet;// set chứa tên những người đang hoạt động
     private SSLServerSocket serverSocket;
     private int port;
     private JTextArea console;
@@ -39,6 +39,7 @@ public class ServerCore{
 
     }
     static {
+        //import ssl info
         System.setProperty("javax.net.ssl.keyStore", KEY_STORE_PATH);
         System.setProperty("javax.net.ssl.keyStorePassword", KEY_STORE_PW);
     }
@@ -89,16 +90,13 @@ public class ServerCore{
                                 break;
                             case GROUP:
                                 if (msg.getMessageType() == Message.MessageType.REGISTER) {
-                                    register(msg);
+                                    handleRegister(msg);
                                 } else if (msg.getMessageType() == Message.MessageType.LOGIN) {
-                                    login(msg);
+                                    handleLogin(msg);
                                 } else if (msg.getMessageType() == Message.MessageType.LOGOUT) {
-                                    logout(msg);
-                                    notifyToAllUsers(msg.getSender());
-                                } else if (msg.getMessageType() == Message.MessageType.MSG) {
+                                    handleLogout(msg);
+                                } else if (msg.getMessageType() == Message.MessageType.MSG || msg.getMessageType() == Message.MessageType.FILE) {
                                     transferToAll(msg);
-                                } else if (msg.getMessageType() == Message.MessageType.LOGOUT) {
-                                    logout(msg);
                                 }
                                 break;
                             default:
@@ -119,8 +117,8 @@ public class ServerCore{
 
         private void transferToAll(Message msg) throws IOException {
             for(String key : clientOs.keySet()){
-                if(key.equals(msg.getSender())){
-                    continue;
+                if(key.equals(msg.getSender())){//kiểm tra xem có phải người gửi hay ko
+                    continue;//bỏ qua chính người gửi
                 }else{
                     ObjectOutputStream os = clientOs.get(key);
                     os.writeObject(msg);
@@ -162,10 +160,10 @@ public class ServerCore{
                 }
             }
         }
-        private void register(Message message) throws IOException {
+        private void handleRegister(Message message) throws IOException {
             Message response = new Message();
-            for(String s : accountSet.keySet()){
-                if(s.equals(message.getSender())){
+            for(String s : accountSet.keySet()){//check if username is exist
+                if(s.equals(message.getSender())){//nếu đã tồn tại
                     response.setMessageType(Message.MessageType.DUPLICATED_USER);
                     oos.writeObject(response);
                     oos.flush();
@@ -173,8 +171,8 @@ public class ServerCore{
                     return;
                 }
             }
-            clientOs.put(message.getSender(), oos);
-            accountSet.put(message.getSender(), message.getContent());
+            clientOs.put(message.getSender(), oos);//put username and outputstream
+            accountSet.put(message.getSender(), message.getContent());//put username and password
             console.append("New user: " + message.getSender() + " has been registered!\n");
 
             response.setMessageType(Message.MessageType.REGISTER_SUCCESS);
@@ -183,14 +181,14 @@ public class ServerCore{
             oos.reset();
 //            notifyToAllUsers(message.getSender());
         }
-        private void login(Message msg) throws IOException {
+        private void handleLogin(Message msg) throws IOException {
             Message response = new Message();
-            if(accountSet.get(msg.getSender()).equals(msg.getContent())){
+            if(accountSet.get(msg.getSender()).equals(msg.getContent())){//kiểm tra username và password
                 clientOs.put(msg.getSender(), oos);
                 activeSet.add(msg.getSender());
                 response.setMessageType(Message.MessageType.LOGIN_SUCCESS);
                 console.append(msg.getSender() + " has been login!\n");
-                model.addElement(msg.getSender());
+                model.addElement(msg.getSender());//thêm người dùng vào list
                 response.setActiveList(new ArrayList<>(activeSet));
                 oos.writeObject(response);
                 oos.flush();
@@ -201,11 +199,11 @@ public class ServerCore{
                 oos.flush();
             }
         }
-        private void logout(Message msg) throws IOException {
-            activeSet.remove(msg.getSender());
+        private void handleLogout(Message msg) throws IOException {
+            activeSet.remove(msg.getSender());//xóa người dùng khỏi danh sách hoạt động
             clientOs.remove(msg.getSender());
-            clientSocket.close();
-            notifyToAllUsers(msg.getSender());
+            clientSocket.close();//đóng kết nối giữa người dùng và server
+            notifyToAllUsers(msg.getSender());//thông báo tới người dùng vừa mới logout
         }
     }
 

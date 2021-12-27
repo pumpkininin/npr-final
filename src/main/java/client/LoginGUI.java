@@ -67,8 +67,8 @@ public class LoginGUI extends javax.swing.JFrame {
 
         registerBtn.setText("Register");
         registerBtn.addActionListener(e -> {
-            String username = usernameTf.getText();
-            String password = passTf.getText();
+            String username = usernameTf.getText();//lấy username ở textfield
+            String password = passTf.getText();//lấy password ở textfield
             try {
                 register(username, password);
             } catch (IOException ex) {
